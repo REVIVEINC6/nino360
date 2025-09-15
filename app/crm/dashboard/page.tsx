@@ -86,57 +86,6 @@ import {
   quickActions,
 } from "./data"
 
-const quickActions = [
-  {
-    id: 1,
-    title: "Add New Lead",
-    icon: UserPlus,
-    color: "bg-blue-500",
-    description: "Create a new lead entry",
-    shortcut: "Ctrl+N",
-  },
-  {
-    id: 2,
-    title: "Schedule Meeting",
-    icon: CalendarIcon,
-    color: "bg-green-500",
-    description: "Book a meeting with prospect",
-    shortcut: "Ctrl+M",
-  },
-  {
-    id: 3,
-    title: "Send Email",
-    icon: Mail,
-    color: "bg-purple-500",
-    description: "Send follow-up email",
-    shortcut: "Ctrl+E",
-  },
-  {
-    id: 4,
-    title: "Create Proposal",
-    icon: FileText,
-    color: "bg-orange-500",
-    description: "Generate new proposal",
-    shortcut: "Ctrl+P",
-  },
-  {
-    id: 5,
-    title: "Log Call",
-    icon: Phone,
-    color: "bg-red-500",
-    description: "Record call activity",
-    shortcut: "Ctrl+L",
-  },
-  {
-    id: 6,
-    title: "Update Deal",
-    icon: Target,
-    color: "bg-indigo-500",
-    description: "Modify deal information",
-    shortcut: "Ctrl+U",
-  },
-]
-
 export default function AdvancedCRMDashboard() {
   // State management
   const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false)
@@ -1735,7 +1684,7 @@ export default function AdvancedCRMDashboard() {
                         variant="outline"
                         size="sm"
                         className="bg-white/50 backdrop-blur-sm"
-                        onClick={handleScheduleMeeting}
+                        onClick={() => handleScheduleMeeting()}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         Schedule
