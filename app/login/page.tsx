@@ -134,7 +134,7 @@ export default function LoginPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Nino360</h1>
-            <p className="text-gray-600">AI-Native HR & ESG Platform</p>
+            <p className="text-gray-600">AI-Native Platform</p>
           </div>
         </div>
 
