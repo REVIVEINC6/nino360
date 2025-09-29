@@ -1,4 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
+// Ensure this route runs in the Node.js runtime and is treated as dynamic
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 import { createClient } from "@/lib/supabase-server"
 
 export async function GET(request: NextRequest) {

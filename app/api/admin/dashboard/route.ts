@@ -146,6 +146,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Ensure this route runs in the Node.js runtime and is treated as dynamic
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 // Helper functions
 function calculateSystemHealth(metrics: any[]): number {
   if (!metrics.length) return 100
