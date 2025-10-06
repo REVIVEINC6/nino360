@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,11 +21,21 @@ export default function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
-  const searchParams = useSearchParams()
-  const rawRedirect = searchParams?.get("redirect") || ""
+
+  // Read redirect from window.location on mount to avoid prerender/runtime mismatch
+  const [redirectPath, setRedirectPath] = useState<string>("/dashboard")
   // Prevent open-redirects by only allowing relative paths
   const getSafeRedirect = (r: string) => (r && r.startsWith("/") ? r : "/dashboard")
-  const redirectPath = getSafeRedirect(rawRedirect)
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const raw = params.get("redirect") || ""
+      setRedirectPath(getSafeRedirect(raw))
+    } catch (e) {
+      // ignore
+    }
+  }, [])
 
   const [signInData, setSignInData] = useState({
     email: "",
