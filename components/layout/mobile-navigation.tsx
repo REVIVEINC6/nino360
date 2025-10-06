@@ -196,7 +196,7 @@ export function MobileNavigation({ currentModule, currentPage, onNavigate }: Mob
           <SheetHeader className="p-6 pb-4 border-b border-gray-200/50">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src="/placeholder.svg?height=40&width=40" />
+                <AvatarImage src="/nino360-primary.png?height=40&width=40" />
                 <AvatarFallback>JD</AvatarFallback>
               </Avatar>
               <div className="flex-1">

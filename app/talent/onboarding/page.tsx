@@ -12,7 +12,7 @@ const mockOnboarding = [
   {
     id: "onb-001",
     employeeName: "Sarah Johnson",
-    employeeAvatar: "/placeholder.svg?height=40&width=40",
+  employeeAvatar: "/nino360-primary.png?height=40&width=40",
     position: "Senior Software Engineer",
     startDate: "2024-02-01",
     status: "In Progress",
@@ -24,7 +24,7 @@ const mockOnboarding = [
   {
     id: "onb-002",
     employeeName: "Emily Rodriguez",
-    employeeAvatar: "/placeholder.svg?height=40&width=40",
+  employeeAvatar: "/nino360-primary.png?height=40&width=40",
     position: "UX Designer",
     startDate: "2024-01-15",
     status: "Completed",
@@ -128,7 +128,7 @@ export default function TalentOnboarding() {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={item.employeeAvatar || "/placeholder.svg"} alt={item.employeeName} />
+                    <AvatarImage src={item.employeeAvatar || "/nino360-primary.png"} alt={item.employeeName} />
                     <AvatarFallback>
                       {item.employeeName
                         .split(" ")

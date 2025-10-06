@@ -466,7 +466,7 @@ export function BenchModule() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <Avatar>
-                          <AvatarImage src={resource.avatar || "/placeholder.svg"} />
+                          <AvatarImage src={resource.avatar || "/nino360-primary.png"} />
                           <AvatarFallback>
                             {resource.name
                               .split(" ")
@@ -757,7 +757,7 @@ export function BenchModule() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={selectedResource.avatar || "/placeholder.svg"} />
+                  <AvatarImage src={selectedResource.avatar || "/nino360-primary.png"} />
                   <AvatarFallback>
                     {selectedResource.name
                       .split(" ")

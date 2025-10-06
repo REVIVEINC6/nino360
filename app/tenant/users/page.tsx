@@ -609,7 +609,7 @@ export default function UserManagement() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar || "/placeholder.svg"} />
+                        <AvatarImage src={user.avatar || "/nino360-primary.png"} />
                         <AvatarFallback>
                           {user.firstName[0]}
                           {user.lastName[0]}

@@ -63,7 +63,7 @@ export function CompanyProfileHeader({ company, onEdit, onShare, onAIInsights }:
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
           <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
-            <AvatarImage src={company.logo || "/placeholder.svg"} alt={company.name} />
+            <AvatarImage src={company.logo || "/nino360-primary.png"} alt={company.name} />
             <AvatarFallback className="text-2xl font-bold">
               {company.name
                 .split(" ")

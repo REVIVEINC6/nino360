@@ -13,7 +13,7 @@ const mockAssessments = [
   {
     id: "assess-001",
     candidateName: "Sarah Johnson",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobTitle: "Senior Software Engineer",
     assessmentType: "Technical",
     status: "Completed",
@@ -25,7 +25,7 @@ const mockAssessments = [
   {
     id: "assess-002",
     candidateName: "Michael Chen",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobTitle: "Product Manager",
     assessmentType: "Case Study",
     status: "In Progress",
@@ -146,7 +146,7 @@ export default function AssessmentCenter() {
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarImage
-                      src={assessment.candidateAvatar || "/placeholder.svg"}
+                      src={assessment.candidateAvatar || "/nino360-primary.png"}
                       alt={assessment.candidateName}
                     />
                     <AvatarFallback>

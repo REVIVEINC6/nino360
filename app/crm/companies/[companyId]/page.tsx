@@ -167,7 +167,7 @@ export default function CompanyProfilePage() {
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4">
             <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
-              <AvatarImage src={company.logo_url || "/placeholder.svg"} alt={company.name} />
+              <AvatarImage src={company.logo_url || "/nino360-primary.png"} alt={company.name} />
               <AvatarFallback className="text-2xl font-bold">
                 {company.name
                   .split(" ")
@@ -540,7 +540,7 @@ export default function CompanyProfilePage() {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar>
-                              <AvatarImage src={contact.avatar_url || "/placeholder.svg"} alt={contact.name} />
+                              <AvatarImage src={contact.avatar_url || "/nino360-primary.png"} alt={contact.name} />
                               <AvatarFallback>
                                 {contact.name
                                   .split(" ")

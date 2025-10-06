@@ -125,7 +125,7 @@ const recentActivities = [
     description: "TechCorp Solutions - Senior Developer position",
     time: "2 minutes ago",
     user: "Sarah Johnson",
-    avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
     priority: "high",
   },
   {
@@ -135,7 +135,7 @@ const recentActivities = [
     description: "John Doe - React Developer interview at 3 PM",
     time: "15 minutes ago",
     user: "Mike Chen",
-    avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
     priority: "medium",
   },
   {
@@ -145,7 +145,7 @@ const recentActivities = [
     description: "Emily Davis successfully onboarded to Development team",
     time: "1 hour ago",
     user: "Lisa Wang",
-    avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
     priority: "low",
   },
   {
@@ -155,7 +155,7 @@ const recentActivities = [
     description: "Nino360 Platform Redesign - 75% completion milestone",
     time: "2 hours ago",
     user: "David Kim",
-    avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
     priority: "high",
   },
   {
@@ -165,7 +165,7 @@ const recentActivities = [
     description: "Q4 2024 vendor payments processed successfully",
     time: "3 hours ago",
     user: "Maria Garcia",
-    avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
     priority: "medium",
   },
 ]
@@ -561,7 +561,7 @@ export function DashboardContent() {
                       className="flex items-start space-x-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={activity.avatar || "/placeholder.svg"} />
+                        <AvatarImage src={activity.avatar || "/nino360-primary.png"} />
                         <AvatarFallback>
                           {activity.user
                             .split(" ")

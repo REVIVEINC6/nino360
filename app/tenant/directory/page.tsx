@@ -446,7 +446,7 @@ export default function TenantDirectoryPage() {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src={tenant.logo || "/placeholder.svg"} />
+                              <AvatarImage src={tenant.logo || "/nino360-primary.png"} />
                               <AvatarFallback>{tenant.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div>

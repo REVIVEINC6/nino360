@@ -412,7 +412,7 @@ export default function EnrollmentsPage() {
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={enrollment.userAvatar || "/placeholder.svg"} />
+                          <AvatarImage src={enrollment.userAvatar || "/nino360-primary.png"} />
                           <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
                             {getUserInitials(enrollment.userName)}
                           </AvatarFallback>

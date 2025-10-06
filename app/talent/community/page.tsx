@@ -92,7 +92,7 @@ export default function TalentCommunity() {
               >
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src="/placeholder.svg" />
+                    <AvatarImage src="/nino360-primary.png" />
                     <AvatarFallback>
                       {community.name
                         .split(" ")

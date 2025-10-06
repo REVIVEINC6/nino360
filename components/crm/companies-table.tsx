@@ -122,7 +122,7 @@ export function CompaniesTable({ companies, selectedCompanies, onSelectCompany, 
                   <div className="flex items-center gap-3">
                     {company.isPinned && <Pin className="h-3 w-3 text-yellow-500" />}
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={company.logo || "/placeholder.svg"} alt={company.name} />
+                      <AvatarImage src={company.logo || "/nino360-primary.png"} alt={company.name} />
                       <AvatarFallback>
                         {company.name
                           .split(" ")

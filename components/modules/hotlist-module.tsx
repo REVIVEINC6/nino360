@@ -54,7 +54,7 @@ export function HotlistModule() {
       matchScore: 95,
       lastContact: "2 hours ago",
       status: "Interview Scheduled",
-      avatar: "/placeholder.svg?height=40&width=40",
+  avatar: "/nino360-primary.png?height=40&width=40",
     },
     {
       id: 2,
@@ -68,7 +68,7 @@ export function HotlistModule() {
       matchScore: 92,
       lastContact: "1 day ago",
       status: "Client Review",
-      avatar: "/placeholder.svg?height=40&width=40",
+  avatar: "/nino360-primary.png?height=40&width=40",
     },
     {
       id: 3,
@@ -82,7 +82,7 @@ export function HotlistModule() {
       matchScore: 98,
       lastContact: "30 minutes ago",
       status: "Offer Pending",
-      avatar: "/placeholder.svg?height=40&width=40",
+  avatar: "/nino360-primary.png?height=40&width=40",
     },
   ]
 
@@ -350,7 +350,7 @@ export function HotlistModule() {
                     >
                       <div className="flex items-center gap-4">
                         <Avatar>
-                          <AvatarImage src={candidate.avatar || "/placeholder.svg"} />
+                          <AvatarImage src={candidate.avatar || "/nino360-primary.png"} />
                           <AvatarFallback>
                             {candidate.name
                               .split(" ")

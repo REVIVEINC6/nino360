@@ -181,7 +181,7 @@ export default function ProfilePage() {
     timezone: "America/New_York",
     language: "en",
     dateFormat: "MM/DD/YYYY",
-    avatar: "/placeholder.svg?height=100&width=100",
+  avatar: "/nino360-primary.png?height=100&width=100",
     skills: ["Leadership", "Team Management", "Strategic Planning", "Data Analysis", "Communication"],
     interests: ["Technology", "Innovation", "Sustainability", "Mentoring", "Continuous Learning"],
     workPreferences: {
@@ -1021,7 +1021,7 @@ export default function ProfilePage() {
                     <div className="flex items-start gap-6">
                       <div className="relative">
                         <Avatar className="h-32 w-32">
-                          <AvatarImage src={profile.avatar || "/placeholder.svg"} />
+                          <AvatarImage src={profile.avatar || "/nino360-primary.png"} />
                           <AvatarFallback className="text-2xl">
                             {profile.firstName[0]}
                             {profile.lastName[0]}

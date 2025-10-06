@@ -224,7 +224,7 @@ export default function EmployeeDetailPage() {
         <CardContent className="pt-6">
           <div className="flex items-start gap-6">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={employee.avatar || "/placeholder.svg"} />
+              <AvatarImage src={employee.avatar || "/nino360-primary.png"} />
               <AvatarFallback className="text-lg">{getInitials(employee.firstName, employee.lastName)}</AvatarFallback>
             </Avatar>
             <div className="flex-1">

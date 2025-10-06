@@ -169,7 +169,7 @@ export function TenantDetailSheet({ tenant, isOpen, onClose, onUpdate }: TenantD
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="h-12 w-12">
-                <AvatarImage src={tenant.logo || "/placeholder.svg"} />
+                <AvatarImage src={tenant.logo || "/nino360-primary.png"} />
                 <AvatarFallback className="text-lg">{tenant.name.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div>

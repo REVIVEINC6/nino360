@@ -64,7 +64,7 @@ const mockReferrals: Referral[] = [
     submittedDate: "2024-01-15",
     reward: 2000,
     notes: "Former colleague with excellent React skills",
-    avatar: "/placeholder.svg?height=40&width=40",
+  avatar: "/nino360-primary.png?height=40&width=40",
   },
   {
     id: "2",
@@ -186,7 +186,7 @@ export default function EmployeeReferralsPage() {
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={referral.avatar || "/placeholder.svg"} alt={referral.referrerName} />
+                  <AvatarImage src={referral.avatar || "/nino360-primary.png"} alt={referral.referrerName} />
                   <AvatarFallback>
                     {referral.referrerName
                       .split(" ")

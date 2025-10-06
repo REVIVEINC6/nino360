@@ -74,7 +74,7 @@ const mockCandidates: Candidate[] = [
     linkedin: "linkedin.com/in/sarahjohnson",
     github: "github.com/sarahjohnson",
     portfolio: "sarahjohnson.dev",
-    avatar: "/placeholder.svg?height=40&width=40",
+  avatar: "/nino360-primary.png?height=40&width=40",
     rating: 4.8,
     status: "Available",
     salary: { current: 140000, expected: 160000, currency: "USD" },
@@ -96,7 +96,7 @@ const mockCandidates: Candidate[] = [
     phone: "+1 (555) 987-6543",
     linkedin: "linkedin.com/in/michaelchen",
     github: "github.com/michaelchen",
-    avatar: "/placeholder.svg?height=40&width=40",
+  avatar: "/nino360-primary.png?height=40&width=40",
     rating: 4.6,
     status: "Passive",
     salary: { current: 120000, expected: 140000, currency: "USD" },
@@ -118,7 +118,7 @@ const mockCandidates: Candidate[] = [
     phone: "+1 (555) 456-7890",
     linkedin: "linkedin.com/in/emilyrodriguez",
     portfolio: "emilyrodriguez.design",
-    avatar: "/placeholder.svg?height=40&width=40",
+  avatar: "/nino360-primary.png?height=40&width=40",
     rating: 4.9,
     status: "Interviewing",
     salary: { current: 95000, expected: 110000, currency: "USD" },
@@ -346,7 +346,7 @@ export default function CandidateSourcing() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={candidate.avatar || "/placeholder.svg"} alt={candidate.name} />
+                        <AvatarImage src={candidate.avatar || "/nino360-primary.png"} alt={candidate.name} />
                         <AvatarFallback>
                           {candidate.name
                             .split(" ")
@@ -455,7 +455,7 @@ export default function CandidateSourcing() {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={selectedCandidate.avatar || "/placeholder.svg"} alt={selectedCandidate.name} />
+                    <AvatarImage src={selectedCandidate.avatar || "/nino360-primary.png"} alt={selectedCandidate.name} />
                     <AvatarFallback>
                       {selectedCandidate.name
                         .split(" ")

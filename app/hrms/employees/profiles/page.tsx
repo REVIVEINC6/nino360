@@ -313,7 +313,7 @@ export default function EmployeeProfilesPage() {
         <CardContent className="p-6">
           <div className="flex items-start space-x-6">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={profile.avatar || "/placeholder.svg"} alt={profile.personalInfo.name} />
+              <AvatarImage src={profile.avatar || "/nino360-primary.png"} alt={profile.personalInfo.name} />
               <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl">
                 {profile.personalInfo.name
                   .split(" ")

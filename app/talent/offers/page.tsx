@@ -11,7 +11,7 @@ const mockOffers = [
   {
     id: "offer-001",
     candidateName: "Sarah Johnson",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobTitle: "Senior Software Engineer",
     salary: 160000,
     status: "Pending",
@@ -22,7 +22,7 @@ const mockOffers = [
   {
     id: "offer-002",
     candidateName: "Emily Rodriguez",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobTitle: "UX Designer",
     salary: 110000,
     status: "Accepted",
@@ -127,7 +127,7 @@ export default function OfferManagement() {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={offer.candidateAvatar || "/placeholder.svg"} alt={offer.candidateName} />
+                    <AvatarImage src={offer.candidateAvatar || "/nino360-primary.png"} alt={offer.candidateName} />
                     <AvatarFallback>
                       {offer.candidateName
                         .split(" ")

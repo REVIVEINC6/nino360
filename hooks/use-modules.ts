@@ -22,10 +22,10 @@ const mockModules: Module[] = [
     createdAt: new Date("2023-06-01"),
     features: ["Lead Management", "Pipeline Tracking", "Contact Management", "Activity Logging"],
     dependencies: [],
-    metadata: {
-      developer: "ESG OS Team",
-      supportUrl: "https://support.esgos.com/crm",
-      documentationUrl: "https://docs.esgos.com/crm",
+      metadata: {
+      developer: "Nino360 Team",
+      supportUrl: "https://support.nino360.com/crm",
+      documentationUrl: "https://docs.nino360.com/crm",
     },
   },
   {
@@ -49,9 +49,9 @@ const mockModules: Module[] = [
       yearly: 490,
     },
     metadata: {
-      developer: "ESG OS Team",
-      supportUrl: "https://support.esgos.com/talent",
-      documentationUrl: "https://docs.esgos.com/talent",
+      developer: "Nino360 Team",
+      supportUrl: "https://support.nino360.com/talent",
+      documentationUrl: "https://docs.nino360.com/talent",
     },
   },
   {
@@ -75,9 +75,9 @@ const mockModules: Module[] = [
       yearly: 1990,
     },
     metadata: {
-      developer: "ESG OS Team",
-      supportUrl: "https://support.esgos.com/finance",
-      documentationUrl: "https://docs.esgos.com/finance",
+      developer: "Nino360 Team",
+      supportUrl: "https://support.nino360.com/finance",
+      documentationUrl: "https://docs.nino360.com/finance",
     },
   },
   {
@@ -101,9 +101,9 @@ const mockModules: Module[] = [
       yearly: 2990,
     },
     metadata: {
-      developer: "ESG OS AI Team",
-      supportUrl: "https://support.esgos.com/ai",
-      documentationUrl: "https://docs.esgos.com/ai",
+      developer: "Nino360 AI Team",
+      supportUrl: "https://support.nino360.com/ai",
+      documentationUrl: "https://docs.nino360.com/ai",
     },
   },
 ]
@@ -192,7 +192,7 @@ export function useModules() {
         dependencies: moduleData.dependencies || [],
         pricing: moduleData.pricing,
         metadata: moduleData.metadata || {
-          developer: "ESG OS Team",
+          developer: "Nino360 Team",
           supportUrl: "",
           documentationUrl: "",
         },

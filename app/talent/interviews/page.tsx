@@ -78,7 +78,7 @@ const mockInterviews: Interview[] = [
     candidateId: "cand-001",
     candidateName: "Sarah Johnson",
     candidateEmail: "sarah.johnson@email.com",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobId: "job-001",
     jobTitle: "Senior Software Engineer",
     department: "Engineering",
@@ -95,13 +95,13 @@ const mockInterviews: Interview[] = [
         id: "int-001",
         name: "John Smith",
         role: "Engineering Manager",
-        avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
       },
       {
         id: "int-002",
         name: "Emily Davis",
         role: "Senior Engineer",
-        avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
       },
     ],
     notes: "Technical interview focusing on system design and React expertise",
@@ -114,7 +114,7 @@ const mockInterviews: Interview[] = [
     candidateId: "cand-002",
     candidateName: "Michael Chen",
     candidateEmail: "michael.chen@email.com",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobId: "job-002",
     jobTitle: "Product Manager",
     department: "Product",
@@ -131,7 +131,7 @@ const mockInterviews: Interview[] = [
         id: "int-003",
         name: "Alex Rodriguez",
         role: "Product Director",
-        avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
       },
     ],
     notes: "Initial screening interview",
@@ -151,7 +151,7 @@ const mockInterviews: Interview[] = [
     candidateId: "cand-003",
     candidateName: "Emily Rodriguez",
     candidateEmail: "emily.rodriguez@email.com",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobId: "job-003",
     jobTitle: "UX Designer",
     department: "Design",
@@ -168,19 +168,19 @@ const mockInterviews: Interview[] = [
         id: "int-004",
         name: "Lisa Wang",
         role: "Design Manager",
-        avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
       },
       {
         id: "int-005",
         name: "David Kim",
         role: "Senior Designer",
-        avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
       },
       {
         id: "int-006",
         name: "Maria Garcia",
         role: "Product Manager",
-        avatar: "/placeholder.svg?height=32&width=32",
+  avatar: "/nino360-primary.png?height=32&width=32",
       },
     ],
     notes: "Portfolio review and design challenge",
@@ -438,7 +438,7 @@ export default function InterviewManagement() {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
                         <AvatarImage
-                          src={interview.candidateAvatar || "/placeholder.svg"}
+                          src={interview.candidateAvatar || "/nino360-primary.png"}
                           alt={interview.candidateName}
                         />
                         <AvatarFallback>
@@ -543,7 +543,7 @@ export default function InterviewManagement() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12">
                           <AvatarImage
-                            src={interview.candidateAvatar || "/placeholder.svg"}
+                            src={interview.candidateAvatar || "/nino360-primary.png"}
                             alt={interview.candidateName}
                           />
                           <AvatarFallback>
@@ -592,7 +592,7 @@ export default function InterviewManagement() {
                       <div className="flex -space-x-2">
                         {interview.interviewers.map((interviewer) => (
                           <Avatar key={interviewer.id} className="h-8 w-8 border-2 border-white">
-                            <AvatarImage src={interviewer.avatar || "/placeholder.svg"} alt={interviewer.name} />
+                            <AvatarImage src={interviewer.avatar || "/nino360-primary.png"} alt={interviewer.name} />
                             <AvatarFallback className="text-xs">
                               {interviewer.name
                                 .split(" ")
@@ -701,7 +701,7 @@ export default function InterviewManagement() {
                 <DialogTitle className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarImage
-                      src={selectedInterview.candidateAvatar || "/placeholder.svg"}
+                      src={selectedInterview.candidateAvatar || "/nino360-primary.png"}
                       alt={selectedInterview.candidateName}
                     />
                     <AvatarFallback>
@@ -807,7 +807,7 @@ export default function InterviewManagement() {
                           {selectedInterview.interviewers.map((interviewer) => (
                             <div key={interviewer.id} className="flex items-center gap-3">
                               <Avatar className="h-10 w-10">
-                                <AvatarImage src={interviewer.avatar || "/placeholder.svg"} alt={interviewer.name} />
+                                <AvatarImage src={interviewer.avatar || "/nino360-primary.png"} alt={interviewer.name} />
                                 <AvatarFallback>
                                   {interviewer.name
                                     .split(" ")

@@ -291,7 +291,7 @@ export function WorkflowManager() {
                                 {step.assignee && (
                                   <div className="flex items-center gap-1">
                                     <Avatar className="h-4 w-4">
-                                      <AvatarImage src={step.assignee.avatar || "/placeholder.svg"} />
+                                      <AvatarImage src={step.assignee.avatar || "/nino360-primary.png"} />
                                       <AvatarFallback className="text-xs">
                                         {step.assignee.name
                                           .split(" ")

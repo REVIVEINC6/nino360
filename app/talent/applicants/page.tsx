@@ -67,7 +67,7 @@ const mockApplications: Application[] = [
     candidateName: "Sarah Johnson",
     candidateEmail: "sarah.johnson@email.com",
     candidatePhone: "+1 (555) 123-4567",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobId: "job-001",
     jobTitle: "Senior Software Engineer",
     department: "Engineering",
@@ -95,7 +95,7 @@ const mockApplications: Application[] = [
     candidateName: "Michael Chen",
     candidateEmail: "michael.chen@email.com",
     candidatePhone: "+1 (555) 987-6543",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobId: "job-002",
     jobTitle: "Product Manager",
     department: "Product",
@@ -122,7 +122,7 @@ const mockApplications: Application[] = [
     candidateName: "Emily Rodriguez",
     candidateEmail: "emily.rodriguez@email.com",
     candidatePhone: "+1 (555) 456-7890",
-    candidateAvatar: "/placeholder.svg?height=40&width=40",
+  candidateAvatar: "/nino360-primary.png?height=40&width=40",
     jobId: "job-003",
     jobTitle: "UX Designer",
     department: "Design",
@@ -393,7 +393,7 @@ export default function ApplicantTracking() {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src={application.candidateAvatar || "/placeholder.svg"}
+                          src={application.candidateAvatar || "/nino360-primary.png"}
                           alt={application.candidateName}
                         />
                         <AvatarFallback>
@@ -504,7 +504,7 @@ export default function ApplicantTracking() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage
-                              src={application.candidateAvatar || "/placeholder.svg"}
+                              src={application.candidateAvatar || "/nino360-primary.png"}
                               alt={application.candidateName}
                             />
                             <AvatarFallback>
@@ -570,7 +570,7 @@ export default function ApplicantTracking() {
                 <DialogTitle className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarImage
-                      src={selectedApplication.candidateAvatar || "/placeholder.svg"}
+                      src={selectedApplication.candidateAvatar || "/nino360-primary.png"}
                       alt={selectedApplication.candidateName}
                     />
                     <AvatarFallback>

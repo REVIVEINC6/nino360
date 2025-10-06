@@ -89,7 +89,7 @@ export default function TalentRecognition() {
               <div key={item.name} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src="/placeholder.svg" />
+                    <AvatarImage src="/nino360-primary.png" />
                     <AvatarFallback>
                       {item.name
                         .split(" ")

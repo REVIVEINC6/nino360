@@ -85,7 +85,7 @@ export default function CandidateEngagement() {
               <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center gap-3">
                   <Avatar>
-                    <AvatarImage src="/placeholder.svg" />
+                    <AvatarImage src="/nino360-primary.png" />
                     <AvatarFallback>SJ</AvatarFallback>
                   </Avatar>
                   <div>

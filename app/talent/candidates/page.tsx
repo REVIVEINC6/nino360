@@ -72,7 +72,7 @@ const mockCandidates: Candidate[] = [
     source: "LinkedIn",
     appliedDate: "2024-01-15",
     lastActivity: "2 hours ago",
-    avatar: "/placeholder.svg?height=40&width=40",
+  avatar: "/nino360-primary.png?height=40&width=40",
     summary: "Experienced frontend developer with expertise in React ecosystem and modern web technologies.",
     education: "BS Computer Science, Stanford University",
     expectedSalary: "$120,000 - $140,000",
@@ -227,7 +227,7 @@ export default function CandidateDatabasePage() {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12">
-                <AvatarImage src={candidate.avatar || "/placeholder.svg"} alt={candidate.name} />
+                <AvatarImage src={candidate.avatar || "/nino360-primary.png"} alt={candidate.name} />
                 <AvatarFallback>
                   {candidate.name
                     .split(" ")
@@ -307,7 +307,7 @@ export default function CandidateDatabasePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 flex-1">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={candidate.avatar || "/placeholder.svg"} alt={candidate.name} />
+                <AvatarImage src={candidate.avatar || "/nino360-primary.png"} alt={candidate.name} />
                 <AvatarFallback>
                   {candidate.name
                     .split(" ")

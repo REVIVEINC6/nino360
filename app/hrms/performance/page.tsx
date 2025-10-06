@@ -367,7 +367,7 @@ export default function PerformancePage() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={review.avatar || "/placeholder.svg"} />
+                          <AvatarImage src={review.avatar || "/nino360-primary.png"} />
                           <AvatarFallback>
                             {review.employeeName
                               .split(" ")
