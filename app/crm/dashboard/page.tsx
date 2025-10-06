@@ -16,6 +16,17 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
+// Mock data fallbacks used to render the dashboard before the runtime API responds
+import {
+  salesMetrics,
+  pipelineData,
+  revenueData,
+  todaysActivities,
+  aiInsights,
+  leadSources,
+  teamPerformance,
+  quickActions,
+} from "./data"
 import {
   AreaChart,
   Area,
@@ -75,16 +86,7 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 import AIChatInterface from "@/components/ai/ai-chat-interface"
 import { useRouter } from "next/navigation"
 
-import {
-  salesMetrics,
-  pipelineData,
-  revenueData,
-  todaysActivities,
-  aiInsights,
-  leadSources,
-  teamPerformance,
-  quickActions,
-} from "./data"
+// Data will be loaded at runtime from the server API
 
 export default function AdvancedCRMDashboard() {
   // State management
@@ -103,7 +105,8 @@ export default function AdvancedCRMDashboard() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [showQuickActions, setShowQuickActions] = useState(false)
   const [selectedTeamMember, setSelectedTeamMember] = useState<any>(null)
-  const [dashboardData, setDashboardData] = useState({
+  const [dashboardData, setDashboardData] = useState(() => ({
+    // provide safe defaults from local mock data so the UI renders before API responds
     metrics: salesMetrics,
     pipeline: pipelineData,
     revenue: revenueData,
@@ -111,7 +114,7 @@ export default function AdvancedCRMDashboard() {
     insights: aiInsights,
     leadSources: leadSources,
     team: teamPerformance,
-  })
+  }))
 
   const isMobile = useMediaQuery("(max-width: 768px)")
   const isTablet = useMediaQuery("(max-width: 1024px)")
@@ -176,6 +179,49 @@ export default function AdvancedCRMDashboard() {
       description: "Dashboard data has been updated successfully",
       duration: 2000,
     })
+  }, [toast])
+
+  // Load dashboard data from server
+  useEffect(() => {
+    let mounted = true
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/dashboard")
+        const json = await res.json()
+        if (mounted && json?.success) {
+          setDashboardData((prev) => ({ ...prev, ...json.data }))
+        }
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err)
+      }
+    }
+
+    load()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  // Trigger AI insights generation for the current tenant (admin-only action)
+  const handleGenerateAIInsights = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/insights/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
+      const json = await res.json()
+      if (json?.success) {
+        toast({ title: "AI Insights Generated", description: `Generated ${json.count} insights`, duration: 3000 })
+        // Optionally refetch dashboard data to include insights
+        const dres = await fetch("/api/dashboard")
+        const djson = await dres.json()
+        if (djson?.success) setDashboardData((prev) => ({ ...prev, ...djson.data }))
+      } else {
+        toast({ title: "AI Generate Failed", description: json?.error || "Unknown error", duration: 4000 })
+      }
+    } catch (err) {
+      console.error("Error generating AI insights:", err)
+      toast({ title: "AI Generate Error", description: "Failed to generate insights", duration: 4000 })
+    }
   }, [toast])
 
   // Utility functions

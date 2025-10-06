@@ -105,11 +105,16 @@ export default function AIChatInterface({
   context = {},
   onClose,
   className = "",
+  // optional voice props to integrate with parent voice settings
+  voiceEnabled = true,
+  autoSpeak = true,
 }: {
   module?: string
   context?: Record<string, any>
   onClose?: () => void
   className?: string
+  voiceEnabled?: boolean
+  autoSpeak?: boolean
 }) {
   // State management
   const [messages, setMessages] = useState<Message[]>([
@@ -128,8 +133,8 @@ export default function AIChatInterface({
   const [isLoading, setIsLoading] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
-    enabled: true,
-    autoSpeak: true,
+    enabled: voiceEnabled,
+    autoSpeak: autoSpeak,
     voice: "default",
     rate: 1,
     pitch: 1,

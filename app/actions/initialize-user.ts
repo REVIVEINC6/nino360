@@ -38,7 +38,8 @@ export async function initializeUserAndTenant(
           email: email,
           first_name: metadata.first_name || metadata.name?.split(" ")[0] || "",
           last_name: metadata.last_name || metadata.name?.split(" ").slice(1).join(" ") || "",
-          role: "employee",
+          // default role must match DB enum; use 'recruiter' which exists in production schema
+          role: "recruiter",
           status: "active",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),

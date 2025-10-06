@@ -205,7 +205,7 @@ export default function ProfilePage() {
     contextualHelp: true,
     proactiveNotifications: false,
     learningPathOptimization: true,
-    workflowAutomization: false,
+    workflowAutomation: false,
   })
 
   // Voice and accessibility settings
@@ -281,7 +281,9 @@ export default function ProfilePage() {
       traits: ["Detail-oriented", "Data-driven", "Systematic", "Thorough"],
     },
     communicationStyle: {
-      type: "collaborative",
+      // "collaborative" isn't part of the declared union for communicationStyle.type
+      // map the intent to an allowed value that best matches collaborative -> "supportive"
+      type: "supportive",
       score: 73,
       preferences: ["Team meetings", "Brainstorming sessions", "Peer feedback", "Open discussions"],
     },
@@ -481,13 +483,14 @@ export default function ProfilePage() {
       const newInsights = [
         {
           id: Date.now().toString(),
-          type: insightTypes[Math.floor(Math.random() * insightTypes.length)],
+          // ensure the picked value is typed as the AIInsight.type union
+          type: insightTypes[Math.floor(Math.random() * insightTypes.length)] as AIInsight['type'],
           title: "New AI-Generated Insight",
           description:
             "Based on your recent activity patterns and performance metrics, we've identified new optimization opportunities.",
           confidence: Math.floor(Math.random() * 30) + 70,
           priority: priorities[Math.floor(Math.random() * priorities.length)],
-          category: categories[Math.floor(Math.random() * categories.length)],
+          category: categories[Math.floor(Math.random() * categories.length)] as AIInsight['category'],
           actionable: Math.random() > 0.5,
           actions: ["Review suggested changes", "Implement recommendations", "Track progress"],
           timestamp: new Date(),
@@ -506,7 +509,8 @@ export default function ProfilePage() {
         },
       ]
 
-      setAiInsights((prev) => [...newInsights, ...prev])
+  // cast the generated objects to AIInsight[] so the setter receives the correct type
+  setAiInsights((prev) => [...(newInsights as AIInsight[]), ...prev])
       toast({
         title: "AI Insights Generated",
         description: `${newInsights.length} new insights have been added to your profile.`,
