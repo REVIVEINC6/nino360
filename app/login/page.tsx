@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,6 +21,11 @@ export default function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const rawRedirect = searchParams?.get("redirect") || ""
+  // Prevent open-redirects by only allowing relative paths
+  const getSafeRedirect = (r: string) => (r && r.startsWith("/") ? r : "/dashboard")
+  const redirectPath = getSafeRedirect(rawRedirect)
 
   const [signInData, setSignInData] = useState({
     email: "",
@@ -55,7 +60,7 @@ export default function LoginPage() {
       if (data.user) {
         setSuccess("Successfully signed in! Redirecting...")
         setTimeout(() => {
-          router.push("/dashboard")
+          router.push(redirectPath)
         }, 1000)
       }
     } catch (err) {
@@ -105,7 +110,7 @@ export default function LoginPage() {
         if (data.user.email_confirmed_at) {
           setSuccess("Account created successfully! Redirecting...")
           setTimeout(() => {
-            router.push("/dashboard")
+            router.push(redirectPath)
           }, 1000)
         } else {
           setSuccess("Please check your email to confirm your account before signing in.")

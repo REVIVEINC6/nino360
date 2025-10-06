@@ -81,7 +81,7 @@ export async function PUT(request: NextRequest) {
         {
           success: false,
           error: "Validation failed",
-          details: validationResult.error.errors,
+          details: validationResult.error.issues,
         },
         { status: 422 },
       )

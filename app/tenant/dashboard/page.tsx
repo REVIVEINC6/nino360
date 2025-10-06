@@ -157,7 +157,7 @@ export default function TenantDashboard() {
         <div className="flex items-center gap-3">
           <AIInsightsDrawer
             module="tenant"
-            context="dashboard"
+            context={{ page: "dashboard" }}
             trigger={
               <Button variant="outline" className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0">
                 <Brain className="h-4 w-4 mr-2" />

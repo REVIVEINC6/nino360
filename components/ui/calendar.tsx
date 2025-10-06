@@ -44,8 +44,8 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+  // react-day-picker's CustomComponents typing is strict; use any-typed props to avoid type mismatch
+  ...( { IconLeft: (props: any) => <ChevronLeft className="h-4 w-4" />, IconRight: (props: any) => <ChevronRight className="h-4 w-4" /> } as any),
       }}
       {...props}
     />

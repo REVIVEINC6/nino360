@@ -25,7 +25,9 @@ export class RPAEngine {
     if (error) throw error
 
     if (rule.enabled) {
-      this.scheduleAutomation(data.id, rule)
+      // scheduleAutomation expects a full AutomationRule including id
+      const fullRule: AutomationRule = { ...(rule as AutomationRule), id: data.id }
+      this.scheduleAutomation(data.id, fullRule)
     }
 
     return data.id

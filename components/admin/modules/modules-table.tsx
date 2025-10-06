@@ -181,7 +181,6 @@ export function ModulesTable({
                       <Switch
                         checked={module.status === "live"}
                         onCheckedChange={(checked) => onToggleStatus(module.id, checked)}
-                        size="sm"
                       />
                     </div>
                   </TableCell>

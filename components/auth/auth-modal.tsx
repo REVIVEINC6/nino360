@@ -17,6 +17,7 @@ import { Eye, EyeOff, Mail, Lock, User, Building2, Sparkles } from "lucide-react
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
+  children?: React.ReactNode
 }
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {

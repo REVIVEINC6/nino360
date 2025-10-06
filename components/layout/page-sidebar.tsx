@@ -17,6 +17,7 @@ interface PageSidebarProps {
   className?: string
   pages?: any[]
   currentPage?: string
+  currentModule?: string
   moduleTitle?: string
   moduleIcon?: any
   isCollapsed?: boolean

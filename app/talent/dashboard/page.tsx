@@ -236,9 +236,9 @@ export default function TalentDashboard() {
               <div className="text-2xl font-bold">{metric.value}</div>
               <p
                 className={`text-xs ${
-                  metric.changeType === "positive"
+                  String(metric.changeType) === "positive"
                     ? "text-green-600"
-                    : metric.changeType === "negative"
+                    : String(metric.changeType) === "negative"
                       ? "text-red-600"
                       : "text-muted-foreground"
                 }`}

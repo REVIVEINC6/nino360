@@ -193,7 +193,8 @@ export default function AnalyticsPage() {
                       cy="50%"
                       outerRadius={80}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      // percent is provided by recharts but typing can be loose — accept any
+                      label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
                       {pipelineData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />

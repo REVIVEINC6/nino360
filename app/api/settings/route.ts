@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
     return successResponse(newSetting, "Setting created successfully", 201)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return validationErrorResponse("Validation failed", error.errors)
+  return validationErrorResponse("Validation failed", error.issues)
     }
     console.error("Settings API error:", error)
     return internalServerErrorResponse()
@@ -328,7 +328,7 @@ export async function PUT(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return validationErrorResponse("Validation failed", error.errors)
+  return validationErrorResponse("Validation failed", error.issues)
     }
     console.error("Settings API error:", error)
     return internalServerErrorResponse()

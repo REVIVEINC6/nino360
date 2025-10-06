@@ -95,7 +95,7 @@ export function RoleBasedAccess({
   // Check permission-based access
   if (requiredPermission) {
     const permissions = Array.isArray(requiredPermission) ? requiredPermission : [requiredPermission]
-    const hasRequiredPermission = permissions.some((permission) => hasPermission(permission))
+  const hasRequiredPermission = permissions.some((permission) => (typeof hasPermission === "function" ? hasPermission(permission) : false))
 
     if (!hasRequiredPermission) {
       if (fallback) return <>{fallback}</>
@@ -115,7 +115,7 @@ export function RoleBasedAccess({
 
   // Check tenant-based access
   if (requiredTenant) {
-    if (!canAccessTenant(requiredTenant)) {
+  if (!(typeof canAccessTenant === "function" ? canAccessTenant(requiredTenant) : false)) {
       if (fallback) return <>{fallback}</>
       if (showMessage) {
         return (
@@ -132,7 +132,7 @@ export function RoleBasedAccess({
   }
 
   // Check if user account is active
-  if (!profile.is_active) {
+  if (!profile || (profile && (profile as any).is_active === false)) {
     if (fallback) return <>{fallback}</>
     if (showMessage) {
       return (

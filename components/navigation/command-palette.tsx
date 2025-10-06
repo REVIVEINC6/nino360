@@ -175,10 +175,10 @@ export function CommandPalette() {
       recentPages.forEach((page, index) => {
         items.push({
           id: `recent-${page.id}`,
-          title: page.name,
+          title: page.title,
           subtitle: "Recently visited",
           icon: page.icon || Activity,
-          action: () => router.push(page.path),
+          action: () => router.push(page.href),
           category: "Recent",
           aiScore: 80 - index * 5,
         })
@@ -190,10 +190,10 @@ export function CommandPalette() {
       favorites.forEach((page, index) => {
         items.push({
           id: `favorite-${page.id}`,
-          title: page.name,
+          title: page.title,
           subtitle: "Favorited page",
           icon: page.icon || Activity,
-          action: () => router.push(page.path),
+          action: () => router.push(page.href),
           category: "Favorites",
           aiScore: 85 - index * 3,
         })

@@ -12,7 +12,7 @@ const fieldAccessSchema = z.object({
 
 const bulkUpdateSchema = z.object({
   role_id: z.string().uuid(),
-  field_permissions: z.record(z.any()),
+  field_permissions: z.record(z.string(), z.any()),
 })
 
 export async function GET(request: NextRequest) {
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Validation error", details: error.errors }, { status: 400 })
+      return NextResponse.json({ error: "Validation error", details: error.issues }, { status: 400 })
     }
 
     console.error("Error in POST /api/admin/roles/field-access:", error)

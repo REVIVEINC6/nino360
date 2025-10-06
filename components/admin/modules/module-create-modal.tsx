@@ -89,7 +89,20 @@ export function ModuleCreateModal({ open, onOpenChange, onSubmit }: ModuleCreate
   const handleSubmit = async (data: ModuleFormData) => {
     try {
       setLoading(true)
-      await onSubmit(data)
+      // Ensure pricing has both monthly and yearly numbers when passing to onSubmit
+      const normalized: Partial<Module> = {
+        ...data,
+        pricing: {
+          monthly: data.pricing?.monthly ?? 0,
+          yearly: data.pricing?.yearly ?? 0,
+        },
+        metadata: {
+          developer: data.metadata?.developer ?? "Nino360 Team",
+          supportUrl: data.metadata?.supportUrl ?? "",
+          documentationUrl: data.metadata?.documentationUrl ?? "",
+        },
+      }
+      await onSubmit(normalized)
       form.reset()
       onOpenChange(false)
     } catch (error) {

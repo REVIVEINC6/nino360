@@ -232,32 +232,34 @@ export function ApplicationStatus() {
       "/health",
     ])
 
-    navigationData.forEach((module) => {
+  Object.values(navigationData).forEach((module) => {
       const modulePages: PageStatus[] = []
       let moduleCompleted = 0
       let moduleInProgress = 0
       let moduleMissing = 0
 
       module.pages.forEach((page) => {
-        const exists = existingPages.has(page.path)
-        const hasContent = pagesWithContent.has(page.path)
-        const hasAPI = pagesWithAPI.has(page.path)
-        const hasSchema = page.path.includes("/admin/") || page.path.includes("/crm/") || page.path.includes("/tenant/")
+  // navigation-data PageItem uses href/title naming
+  const path = page.href || page.id || ""
+  const exists = existingPages.has(path)
+  const hasContent = pagesWithContent.has(path)
+  const hasAPI = pagesWithAPI.has(path)
+  const hasSchema = path.includes("/admin/") || path.includes("/crm/") || path.includes("/tenant/")
 
         const issues: string[] = []
         if (!exists) issues.push("Page file missing")
         if (exists && !hasContent) issues.push("Placeholder content")
-        if (page.path.includes("/api/") && !hasAPI) issues.push("API endpoint missing")
+  if (path.includes("/api/") && !hasAPI) issues.push("API endpoint missing")
 
         let completionScore = 0
         if (exists) completionScore += 25
         if (hasContent) completionScore += 50
-        if (hasAPI && page.path.includes("/api/")) completionScore += 15
+  if (hasAPI && path.includes("/api/")) completionScore += 15
         if (hasSchema) completionScore += 10
 
         const pageStatus: PageStatus = {
-          path: page.path,
-          name: page.name,
+          path,
+          name: page.title || page.id,
           exists,
           hasContent,
           hasAPI,
@@ -299,7 +301,7 @@ export function ApplicationStatus() {
 
     setModuleStatuses(statuses)
     setOverallStats({
-      totalModules: navigationData.length,
+      totalModules: Object.keys(navigationData).length,
       totalPages,
       completedPages,
       inProgressPages,

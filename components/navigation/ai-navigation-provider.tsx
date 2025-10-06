@@ -35,8 +35,8 @@ export interface NavigationItem {
 // Page item interface for recent and favorites
 export interface PageItem {
   id: string
-  name: string
-  path: string
+  title: string
+  href: string
   icon?: any
 }
 
@@ -332,14 +332,14 @@ export function AINavigationProvider({ children }: { children: React.ReactNode }
     // Add these to match what command palette expects
     recentPages: recentItems.map((item) => ({
       id: item.id,
-      name: item.title,
-      path: item.href,
+      title: item.title,
+      href: item.href,
       icon: item.icon,
     })),
     favorites: favoriteItems.map((item) => ({
       id: item.id,
-      name: item.title,
-      path: item.href,
+      title: item.title,
+      href: item.href,
       icon: item.icon,
     })),
     searchResults,

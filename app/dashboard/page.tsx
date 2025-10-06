@@ -1,7 +1,8 @@
+"use client"
+
 import React from 'react'
 import TenantSelector from '@/components/TenantSelector'
 import KpiCard from '@/components/KpiCard'
-"use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"

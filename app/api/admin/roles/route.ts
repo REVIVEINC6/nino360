@@ -7,8 +7,8 @@ const createRoleSchema = z.object({
   description: z.string().optional(),
   scope: z.enum(["global", "tenant", "module"]),
   tenant_id: z.string().uuid().optional(),
-  permissions: z.record(z.array(z.string())).default({}),
-  field_permissions: z.record(z.any()).default({}),
+  permissions: z.record(z.string(), z.array(z.string())).default({}),
+  field_permissions: z.record(z.string(), z.any()).default({}),
   is_system_defined: z.boolean().default(false),
 })
 
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: role }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Validation error", details: error.errors }, { status: 400 })
+      return NextResponse.json({ error: "Validation error", details: error.issues }, { status: 400 })
     }
 
     console.error("Error in POST /api/admin/roles:", error)

@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     // Validation
     const validationResult = createLeadSchema.safeParse(body)
     if (!validationResult.success) {
-      return validationErrorResponse(validationResult.error.errors)
+  return validationErrorResponse(validationResult.error.issues)
     }
 
     const leadData = validationResult.data

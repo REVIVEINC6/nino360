@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 import type { User, Session, AuthChangeEvent } from "@supabase/supabase-js"
 import type { UserRole } from "@/lib/auth/rbac"
 import { createClient } from "@/lib/supabase/client"
+import { hasPermission as rbacHasPermission, canAccessTenant as rbacCanAccessTenant } from "@/lib/auth/rbac"
 
 interface UserProfile {
   id: string
@@ -28,6 +29,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, metadata?: any) => Promise<void>
   signInWithGoogle: () => Promise<void>
+  hasPermission?: (permission: any) => boolean
+  canAccessTenant?: (targetTenantId: string) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -206,6 +209,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signInWithGoogle,
+        // convenience accessors for permission checks
+        hasPermission: (permission: any) => {
+          if (!profile || !profile.role) return false
+          return rbacHasPermission(profile.role as any, permission as any)
+        },
+        canAccessTenant: (targetTenantId: string) => {
+          if (!profile || !profile.role) return false
+          return rbacCanAccessTenant(profile.role as any, profile.tenant_id as any, targetTenantId)
+        },
       }}
     >
       {children}

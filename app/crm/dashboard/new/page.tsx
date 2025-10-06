@@ -308,7 +308,7 @@ export default function NewLeadPage() {
     setFormData((prev) => ({
       ...prev,
       [parent]: {
-        ...prev[parent as keyof LeadFormData],
+        ...((prev as any)[parent] as Record<string, any>),
         [field]: value,
       },
     }))

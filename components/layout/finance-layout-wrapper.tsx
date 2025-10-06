@@ -365,7 +365,7 @@ export function FinanceLayoutWrapper({
       {/* AI Insights Drawer */}
       <AiInsightsDrawer
         isOpen={isAiDrawerOpen}
-        onClose={() => setIsAiDrawerOpen(false)}
+        onOpenChange={(open: boolean) => setIsAiDrawerOpen(open)}
         module="finance"
         context={{
           currentPage,

@@ -5,8 +5,8 @@ import { z } from "zod"
 const updateRoleSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().optional(),
-  permissions: z.record(z.array(z.string())).optional(),
-  field_permissions: z.record(z.any()).optional(),
+  permissions: z.record(z.string(), z.array(z.string())).optional(),
+  field_permissions: z.record(z.string(), z.any()).optional(),
   is_active: z.boolean().optional(),
 })
 
@@ -135,7 +135,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ data: updatedRole })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Validation error", details: error.errors }, { status: 400 })
+      return NextResponse.json({ error: "Validation error", details: error.issues }, { status: 400 })
     }
 
     console.error("Error in PUT /api/admin/roles/[id]:", error)

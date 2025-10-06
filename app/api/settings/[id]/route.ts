@@ -111,7 +111,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return successResponse(updated, "Setting updated successfully")
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return validationErrorResponse("Validation failed", error.errors)
+  return validationErrorResponse("Validation failed", error.issues)
     }
     console.error("Settings API error:", error)
     return internalServerErrorResponse()

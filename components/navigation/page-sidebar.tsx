@@ -40,11 +40,12 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { NavigationPage } from "@/lib/navigation-data"
+import type { PageItem as NavigationPage } from "@/lib/navigation-data"
 
 interface PageSidebarProps {
   pages: NavigationPage[]
   currentPage?: string
+  currentModule?: string
   moduleTitle?: string
   moduleIcon?: any
   isCollapsed?: boolean
@@ -205,7 +206,21 @@ export function PageSidebar({
 
   // Use CRM pages if we're in CRM module, otherwise use provided pages
   const isCRMModule = moduleTitle.toLowerCase().includes("crm") || currentPage.startsWith("/crm")
-  const displayPages = isCRMModule ? crmPagesOrder : pages
+  const normalize = (p: any) => ({
+    id: p.id,
+    title: p.title || p.name || "",
+    href: p.href || p.path || "",
+    icon: p.icon,
+    description: p.description,
+    category: (p as any).category,
+    isNew: p.isNew,
+    isFavorite: p.isFavorite,
+    notifications: p.notifications,
+    status: p.status,
+    aiScore: p.aiScore,
+    usageCount: (p as any).usage || (p as any).usageCount || 0,
+  })
+  const displayPages = (isCRMModule ? crmPagesOrder : pages).map(normalize)
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -217,7 +232,7 @@ export function PageSidebar({
   const filteredPages = useMemo(() => {
     const filtered = displayPages.filter((page) => {
       const matchesSearch =
-        (page.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (page.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         (page.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         (page.category || "").toLowerCase().includes(searchQuery.toLowerCase())
       const matchesCategory = selectedCategory === "all" || page.category === selectedCategory
@@ -234,13 +249,13 @@ export function PageSidebar({
       let comparison = 0
       switch (sortBy) {
         case "name":
-          comparison = (a.name || "").localeCompare(b.name || "")
+          comparison = (a.title || "").localeCompare(b.title || "")
           break
         case "category":
           comparison = (a.category || "").localeCompare(b.category || "")
           break
         case "usage":
-          comparison = (a.usage || 0) - (b.usage || 0)
+          comparison = (a.usageCount || 0) - (b.usageCount || 0)
           break
         case "aiScore":
           comparison = (a.aiScore || 0) - (b.aiScore || 0)
@@ -255,7 +270,7 @@ export function PageSidebar({
   }, [displayPages, searchQuery, selectedCategory, sortBy, sortOrder, isCRMModule])
 
   const handlePageClick = (page: NavigationPage) => {
-    router.push(page.path)
+    router.push(page.href)
   }
 
   const toggleFavorite = (pageId: string) => {
@@ -293,7 +308,7 @@ export function PageSidebar({
         <ScrollArea className="flex-1 p-1">
           <div className="space-y-1">
             {filteredPages.slice(0, 12).map((page) => {
-              const isActive = currentPage === page.path
+              const isActive = currentPage === page.href
               const IconComponent = page.icon || Activity
               return (
                 <Button
@@ -440,7 +455,7 @@ export function PageSidebar({
                           <div className="flex items-center gap-2">
                             <IconComponent className="h-3 w-3 text-purple-600" />
                             <span className="text-xs font-medium text-purple-800 flex-1 truncate">
-                              {page.name || "Untitled"}
+                              {page.title || "Untitled"}
                             </span>
                             <span className="text-xs text-purple-600">{page.aiScore || 0}%</span>
                           </div>
@@ -506,7 +521,7 @@ export function PageSidebar({
         <AnimatePresence>
           <div className="space-y-1">
             {filteredPages.map((page, index) => {
-              const isActive = currentPage === page.path
+              const isActive = currentPage === page.href
               const isFavorite = favorites.includes(page.id)
               const IconComponent = page.icon || Activity
 
@@ -547,7 +562,7 @@ export function PageSidebar({
                       </div>
                       <div className="flex-1 text-left min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium text-xs truncate pr-2">{page.name || "Untitled"}</span>
+                          <span className="font-medium text-xs truncate pr-2">{page.title || "Untitled"}</span>
                           <div className="flex items-center gap-1 flex-shrink-0">
                             {page.isNew && <Badge className="h-3 px-1 text-xs bg-blue-500">New</Badge>}
                             <Button
@@ -583,7 +598,7 @@ export function PageSidebar({
                                 )}
                               />
                             </div>
-                            <span
+                              <span
                               className={cn(
                                 "text-xs font-medium",
                                 isActive ? "text-primary-foreground" : "text-foreground",
@@ -619,7 +634,7 @@ export function PageSidebar({
                                 isActive ? "text-primary-foreground/80" : "text-muted-foreground",
                               )}
                             >
-                              {page.usage || 0}%
+                              {page.usageCount || 0}%
                             </span>
                           </div>
                         </div>

@@ -417,7 +417,7 @@ export default function LeadSourcesPage() {
                       cy="50%"
                       outerRadius={80}
                       dataKey="leads"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
                       {leadSources.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />

@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Validation failed", details: error.errors }, { status: 400 })
+  return NextResponse.json({ error: "Validation failed", details: error.issues }, { status: 400 })
     }
     console.error("Settings import API error:", error)
     return NextResponse.json(

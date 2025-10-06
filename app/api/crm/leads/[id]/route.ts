@@ -89,7 +89,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Validation
     const validationResult = updateLeadSchema.safeParse(body)
     if (!validationResult.success) {
-      return validationErrorResponse(validationResult.error.errors)
+  return validationErrorResponse(validationResult.error.issues)
     }
 
     const updates = validationResult.data
