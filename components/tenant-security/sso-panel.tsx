@@ -1,0 +1,12 @@
+"use client"
+
+import { Card } from "@/components/ui/card"
+
+export function SsoPanel({ context, onUpdate }: any) {
+  return (
+    <Card className="glass p-6">
+      <h3 className="text-lg font-semibold mb-4">SSO & Identity</h3>
+      <p className="text-muted-foreground">SSO configuration panel (to be implemented)</p>
+    </Card>
+  )
+}

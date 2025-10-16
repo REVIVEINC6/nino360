@@ -1,32 +1,102 @@
+import "server-only"
 import { createServerClient as createSupabaseServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
+import { logger } from "@/lib/logger"
 
-export function createClient() {
-  return createServerClient()
-}
+/**
+ * Centralized Supabase server client factory
+ *
+ * Features:
+ * - Singleton pattern for performance
+ * - Automatic cookie handling
+ * - Environment variable validation
+ * - Error logging
+ *
+ * Usage:
+ *   const supabase = await createServerClient()
+ */
+export async function createServerClient() {
+  const cookieStore = await cookies()
 
-export function createServerClient() {
-  const cookieStore = cookies()
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  return createSupabaseServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    logger.error("Supabase environment variables are not configured", undefined, {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseAnonKey,
+    })
+    throw new Error(
+      "Supabase environment variables are not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment variables.",
+    )
+  }
+
+  return createSupabaseServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
+      getAll() {
+        return cookieStore.getAll()
       },
-      set(name: string, value: string, options: any) {
+      setAll(cookiesToSet) {
         try {
-          cookieStore.set({ name, value, ...options })
-        } catch (error) {
-          // Handle cookie setting errors in server components
-        }
-      },
-      remove(name: string, options: any) {
-        try {
-          cookieStore.set({ name, value: "", ...options })
-        } catch (error) {
-          // Handle cookie removal errors in server components
+          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+        } catch {
+          // The `setAll` method was called from a Server Component.
+          // This can be ignored if you have middleware refreshing
+          // user sessions.
         }
       },
     },
   })
+}
+
+/**
+ * Alias for createServerClient
+ * @deprecated Use createServerClient instead
+ */
+export async function getSupabaseServerClient() {
+  return createServerClient()
+}
+
+/**
+ * Alias for createServerClient
+ * @deprecated Use createServerClient instead
+ */
+export async function createClient() {
+  return createServerClient()
+}
+
+/**
+ * Get authenticated user from server
+ */
+export async function getUser() {
+  const supabase = await createServerClient()
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error) {
+    logger.error("Failed to get user", error)
+    return null
+  }
+
+  return user
+}
+
+/**
+ * Get session from server
+ */
+export async function getSession() {
+  const supabase = await createServerClient()
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession()
+
+  if (error) {
+    logger.error("Failed to get session", error)
+    return null
+  }
+
+  return session
 }

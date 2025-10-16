@@ -1,0 +1,53 @@
+name: 'nino360_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'nino360'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  nino360_analytics:
+    +materialized: view
+    +persist_docs:
+      relation: true
+      columns: true
+    staging:
+      +materialized: view
+      +tags: ["staging"]
+    marts:
+      +materialized: table
+      +tags: ["marts"]
+      finance:
+        +schema: mart_finance
+      ats:
+        +schema: mart_ats
+      bench:
+        +schema: mart_bench
+      vms:
+        +schema: mart_vms
+      hrms:
+        +schema: mart_hrms
+      projects:
+        +schema: mart_projects
+      crm:
+        +schema: mart_crm
+      hotlist:
+        +schema: mart_hotlist
+      lms:
+        +schema: mart_lms
+
+vars:
+  reporting_timezone: 'Asia/Kolkata'
+  pii_mask_enabled: true
+  tenant_isolation_enabled: true

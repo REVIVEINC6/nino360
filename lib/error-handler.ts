@@ -1,74 +1,81 @@
-import { NextResponse } from "next/server"
-import { ZodError } from "zod"
+/**
+ * Centralized error handling utility
+ *
+ * Provides consistent error handling across the application
+ * with proper logging and user-friendly error messages
+ */
+
+import { logger } from "./logger"
 
 export class AppError extends Error {
-  public statusCode: number
-  public isOperational: boolean
-
-  constructor(message: string, statusCode = 500, isOperational = true) {
+  constructor(
+    message: string,
+    public code?: string,
+    public statusCode?: number,
+    public context?: Record<string, any>,
+  ) {
     super(message)
-    this.statusCode = statusCode
-    this.isOperational = isOperational
-
-    Error.captureStackTrace(this, this.constructor)
+    this.name = "AppError"
   }
 }
 
-export function handleError(error: unknown): NextResponse {
-  console.error("API Error:", error)
-
-  // Handle Zod validation errors
-  if (error instanceof ZodError) {
-    // In zod v4, use `issues` which contains the validation issues
-    const errorMessages = (error.issues || []).map((issue) => {
-      const path = Array.isArray(issue.path) ? issue.path.join(".") : String(issue.path)
-      return `${path}: ${issue.message}`
-    })
-    return NextResponse.json(
-      {
-        error: "Validation failed",
-        details: errorMessages,
-      },
-      { status: 400 },
-    )
-  }
-
-  // Handle custom app errors
+export function handleError(error: unknown, context?: Record<string, any>): AppError {
+  // If it's already an AppError, just log and return
   if (error instanceof AppError) {
-    return NextResponse.json({ error: error.message }, { status: error.statusCode })
+    logger.error(error.message, error, { ...error.context, ...context })
+    return error
   }
 
-  // Handle Supabase errors
-  if (error && typeof error === "object" && "code" in error) {
-    const supabaseError = error as any
-
-    switch (supabaseError.code) {
-      case "23505": // Unique violation
-        return NextResponse.json({ error: "Resource already exists" }, { status: 409 })
-      case "23503": // Foreign key violation
-        return NextResponse.json({ error: "Referenced resource not found" }, { status: 400 })
-      case "42501": // Insufficient privilege
-        return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 })
-      default:
-        return NextResponse.json({ error: "Database operation failed" }, { status: 500 })
-    }
-  }
-
-  // Handle generic errors
+  // If it's a standard Error
   if (error instanceof Error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error(error.message, error, context)
+    return new AppError(error.message, "UNKNOWN_ERROR", 500, context)
   }
 
-  // Fallback for unknown errors
-  return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 })
+  // If it's something else
+  const message = typeof error === "string" ? error : "An unknown error occurred"
+  logger.error(message, error, context)
+  return new AppError(message, "UNKNOWN_ERROR", 500, context)
 }
 
-export function withErrorHandler<T extends any[], R>(handler: (...args: T) => Promise<R>) {
-  return async (...args: T): Promise<R | NextResponse> => {
-    try {
-      return await handler(...args)
-    } catch (error) {
-      return handleError(error)
-    }
+/**
+ * Get user-friendly error message
+ */
+export function getUserErrorMessage(error: unknown): string {
+  if (error instanceof AppError) {
+    return error.message
   }
+
+  if (error instanceof Error) {
+    // Map common error messages to user-friendly ones
+    if (error.message.includes("fetch failed")) {
+      return "Network error. Please check your connection and try again."
+    }
+    if (error.message.includes("unauthorized")) {
+      return "You do not have permission to perform this action."
+    }
+    if (error.message.includes("not found")) {
+      return "The requested resource was not found."
+    }
+    return error.message
+  }
+
+  return "An unexpected error occurred. Please try again."
+}
+
+/**
+ * Async error wrapper for server actions
+ */
+export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(fn: T, context?: Record<string, any>): T {
+  return (async (...args: Parameters<T>) => {
+    try {
+      return await fn(...args)
+    } catch (error) {
+      const appError = handleError(error, context)
+      return {
+        success: false,
+        error: getUserErrorMessage(appError),
+      }
+    }
+  }) as T
 }
