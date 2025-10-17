@@ -5,6 +5,7 @@ import { FileText, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 const invoices = [
   { id: "INV-001", client: "Acme Corp", amount: "$12,500", status: "paid", date: "2025-01-05" },
@@ -13,11 +14,13 @@ const invoices = [
 ]
 
 export function InvoiceList() {
+  const router = useRouter()
+
   return (
     <Card className="glass-panel border-primary/20">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base">Invoices & Payments</CardTitle>
-        <Button size="sm" className="gap-2">
+        <Button size="sm" className="gap-2" onClick={() => router.push("/finance/invoices/new")}>
           <Plus className="h-3.5 w-3.5" />
           Create Invoice
         </Button>

@@ -15,13 +15,12 @@ export async function listSessions() {
     throw new Error("Unauthorized")
   }
 
-  // Get current session
+  // This is acceptable since we've already authenticated the user with getUser()
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
-  // Note: Supabase doesn't expose all sessions via client API
-  // This would require service role access or custom implementation
+  // Get current session
   return [
     {
       id: session?.access_token?.substring(0, 16) || "current",

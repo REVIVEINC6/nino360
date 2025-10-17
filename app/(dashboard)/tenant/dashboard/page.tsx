@@ -18,17 +18,23 @@ import { ErrorState } from "@/components/tenant-dashboard/error-state"
 import { EmptyState } from "@/components/tenant-dashboard/empty-state"
 import { ForecastsChart } from "@/components/tenant-dashboard/forecasts-chart"
 import { TrustBadges } from "@/components/tenant-dashboard/trust-badges"
+import { RpaAutomationHub } from "@/components/dashboard/rpa-automation-hub"
 
-export default async function TenantDashboardPage() {
+export default async function TenantDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string }>
+}) {
   const context = await getTenantContext()
 
   if ("error" in context) {
     redirect("/signin")
   }
 
+  const params = await searchParams
   const dateRange = {
-    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    to: new Date().toISOString(),
+    from: params.from || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    to: params.to || new Date().toISOString(),
   }
 
   const [kpisResult, moduleUsageResult, auditTimelineResult, aiDigestResult, forecastsResult, trustMetricsResult] =
@@ -53,7 +59,7 @@ export default async function TenantDashboardPage() {
   const moduleUsage = Array.isArray(moduleUsageResult) ? moduleUsageResult : []
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 md:p-6">
       <TenantHeader tenantName={context.name} slug={context.slug} />
 
       <KpiGrid kpis={kpisResult} features={context.features} />
@@ -84,6 +90,8 @@ export default async function TenantDashboardPage() {
         <ForecastsChart activityForecast={forecastsResult.activity} userGrowthForecast={forecastsResult.userGrowth} />
       )}
 
+      <RpaAutomationHub />
+
       {trustMetricsResult && !("error" in trustMetricsResult) && <TrustBadges metrics={trustMetricsResult} />}
 
       {auditEntries.length > 0 ? (
@@ -97,7 +105,7 @@ export default async function TenantDashboardPage() {
         />
       )}
 
-      <QuickActions features={context.features} tenantSlug={context.slug} />
+      <QuickActions features={context.features} tenantSlug={context.slug} tenantId={context.tenantId} />
     </div>
   )
 }

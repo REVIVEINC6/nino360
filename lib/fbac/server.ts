@@ -27,10 +27,7 @@ export async function canAccessField(
   if (!user) return false
 
   // Get tenant_id from JWT claims
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  const tenantId = session?.user?.user_metadata?.tenant_id
+  const tenantId = user.user_metadata?.tenant_id
 
   if (!tenantId) return false
 
@@ -58,10 +55,7 @@ export async function getFieldMaskType(tableName: string, fieldName: string): Pr
   if (!user) return "full"
 
   // Get tenant_id from JWT claims
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  const tenantId = session?.user?.user_metadata?.tenant_id
+  const tenantId = user.user_metadata?.tenant_id
 
   if (!tenantId) return "full"
 

@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { UserCheck, Send, ThumbsUp, Minus, ThumbsDown } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
+import { useState } from "react"
 
 const benchData = [
   { skill: "React", available: 8, color: "hsl(var(--chart-1))" },
@@ -21,6 +24,24 @@ const campaignResponses = [
 ]
 
 export function BenchHotlist() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const [isPublishing, setIsPublishing] = useState(false)
+
+  const handlePublishHotlist = async () => {
+    setIsPublishing(true)
+    // Simulate publishing process
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    toast({
+      title: "Hotlist Published",
+      description: "Bench hotlist has been sent to all active campaigns",
+    })
+
+    setIsPublishing(false)
+    router.push("/bench/campaigns")
+  }
+
   return (
     <Card className="glass-panel border-primary/20 lg:col-span-2">
       <CardHeader>
@@ -29,9 +50,9 @@ export function BenchHotlist() {
             <UserCheck className="h-5 w-5 text-primary" />
             Bench & Hotlist
           </CardTitle>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handlePublishHotlist} disabled={isPublishing}>
             <Send className="h-4 w-4" />
-            Publish Hotlist
+            {isPublishing ? "Publishing..." : "Publish Hotlist"}
           </Button>
         </div>
       </CardHeader>

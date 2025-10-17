@@ -1,14 +1,43 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Shield, Check, X } from "lucide-react"
+import { Search } from "lucide-react"
+import { ModulesMatrix } from "./modules-matrix"
+import { listModules, listPlans, listPlanModules } from "@/app/(dashboard)/admin/modules/actions"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function ModuleAccessManagement() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [modules, setModules] = useState([])
+  const [plans, setPlans] = useState([])
+  const [planModules, setPlanModules] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [modulesData, plansData, planModulesData] = await Promise.all([
+          listModules(),
+          listPlans(),
+          listPlanModules(),
+        ])
+        setModules(modulesData)
+        setPlans(plansData)
+        setPlanModules(planModulesData)
+      } catch (error) {
+        console.error("[v0] Failed to load module access data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  if (loading) {
+    return <Skeleton className="h-[600px] w-full" />
+  }
 
   return (
     <div className="space-y-6">
@@ -30,77 +59,7 @@ export function ModuleAccessManagement() {
             </div>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Plan</TableHead>
-                <TableHead>HRMS</TableHead>
-                <TableHead>CRM</TableHead>
-                <TableHead>ATS</TableHead>
-                <TableHead>Bench</TableHead>
-                <TableHead>VMS</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    <span className="font-medium">Enterprise</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Check className="h-4 w-4 text-green-600" />
-                </TableCell>
-                <TableCell>
-                  <Check className="h-4 w-4 text-green-600" />
-                </TableCell>
-                <TableCell>
-                  <Check className="h-4 w-4 text-green-600" />
-                </TableCell>
-                <TableCell>
-                  <Check className="h-4 w-4 text-green-600" />
-                </TableCell>
-                <TableCell>
-                  <Check className="h-4 w-4 text-green-600" />
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm">
-                    Edit
-                  </Button>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    <span className="font-medium">Professional</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Check className="h-4 w-4 text-green-600" />
-                </TableCell>
-                <TableCell>
-                  <Check className="h-4 w-4 text-green-600" />
-                </TableCell>
-                <TableCell>
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </TableCell>
-                <TableCell>
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </TableCell>
-                <TableCell>
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm">
-                    Edit
-                  </Button>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+          <ModulesMatrix modules={modules} plans={plans} planModules={planModules} />
         </CardContent>
       </Card>
     </div>

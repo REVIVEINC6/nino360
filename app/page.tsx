@@ -17,9 +17,9 @@ import { CTASection } from "@/components/landing/cta-section"
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-white text-slate-900 overflow-hidden">
       <motion.header
-        className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 glass"
+        className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200/50 backdrop-blur-xl bg-white/70"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
@@ -34,27 +34,27 @@ export default function HomePage() {
             </span>
           </Link>
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="#platform" className="text-sm text-white/70 hover:text-white transition-colors">
+            <Link href="#platform" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
               Platform
             </Link>
-            <Link href="#modules" className="text-sm text-white/70 hover:text-white transition-colors">
+            <Link href="#modules" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
               Modules
             </Link>
-            <Link href="#copilot" className="text-sm text-white/70 hover:text-white transition-colors">
+            <Link href="#copilot" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
               AI Copilot
             </Link>
-            <Link href="#trust" className="text-sm text-white/70 hover:text-white transition-colors">
+            <Link href="#trust" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
               Trust & Security
             </Link>
           </nav>
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <Button variant="ghost" className="text-white hover:bg-white/10">
+              <Button variant="ghost" className="text-slate-700 hover:bg-slate-100">
                 Sign in
               </Button>
             </Link>
             <Link href="/signup">
-              <Button className="bg-gradient-to-r from-[#4F46E5] via-[#8B5CF6] to-[#A855F7] hover:opacity-90 transition-opacity">
+              <Button className="bg-gradient-to-r from-[#4F46E5] via-[#8B5CF6] to-[#A855F7] hover:opacity-90 transition-opacity text-white">
                 Get started
               </Button>
             </Link>
@@ -82,7 +82,7 @@ export default function HomePage() {
 
       <CTASection />
 
-      <footer className="border-t border-white/10 py-12 glass">
+      <footer className="border-t border-slate-200/50 py-12 backdrop-blur-xl bg-white/70">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <Link href="/" className="flex items-center gap-3">
@@ -93,25 +93,25 @@ export default function HomePage() {
                 NINO360
               </span>
             </Link>
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/60">
-              <Link href="#platform" className="hover:text-white transition-colors">
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600">
+              <Link href="#platform" className="hover:text-slate-900 transition-colors">
                 Platform
               </Link>
-              <Link href="#security" className="hover:text-white transition-colors">
+              <Link href="#security" className="hover:text-slate-900 transition-colors">
                 Security & Trust
               </Link>
-              <Link href="#partners" className="hover:text-white transition-colors">
+              <Link href="#partners" className="hover:text-slate-900 transition-colors">
                 Partners
               </Link>
-              <Link href="#careers" className="hover:text-white transition-colors">
+              <Link href="#careers" className="hover:text-slate-900 transition-colors">
                 Careers
               </Link>
-              <Link href="#contact" className="hover:text-white transition-colors">
+              <Link href="#contact" className="hover:text-slate-900 transition-colors">
                 Contact
               </Link>
             </div>
           </div>
-          <div className="mt-8 text-center text-sm text-white/40">
+          <div className="mt-8 text-center text-sm text-slate-500">
             <p>© 2025 Nino360. Designed with Intelligence.</p>
           </div>
         </div>

@@ -1,14 +1,41 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, UserPlus, UserMinus, Calendar, Clock, FileText, AlertTriangle, Ticket } from "lucide-react"
 import { getHRMSDashboardKPIs } from "./actions"
-import { redirect } from "next/navigation"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default async function HRMSDashboardPage() {
   const result = await getHRMSDashboardKPIs()
 
   if (!result.success) {
     console.error("[v0] Failed to load HRMS dashboard:", result.error)
-    redirect("/dashboard")
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">HRMS Dashboard</h1>
+          <p className="text-muted-foreground">Human Resource Management System overview</p>
+        </div>
+
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Failed to Load Dashboard</AlertTitle>
+          <AlertDescription className="mt-2 space-y-2">
+            <p>{result.error}</p>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard">Go to Main Dashboard</Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   const { stats, recentJoiners, departmentDistribution } = result.data

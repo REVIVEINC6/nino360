@@ -90,19 +90,19 @@ export default function SignupPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="glass-panel border-white/10 p-8">
+        <Card className="bg-white border-white/20 p-8 shadow-2xl">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-            <p className="text-white/60">Get started with Nino360</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
+            <p className="text-gray-600">Get started with Nino360</p>
           </div>
 
           <form onSubmit={handleSignup} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-white/80">
+              <Label htmlFor="fullName" className="text-gray-700">
                 Full Name
               </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="fullName"
                   type="text"
@@ -110,17 +110,17 @@ export default function SignupPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
-                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                  className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white/80">
+              <Label htmlFor="email" className="text-gray-700">
                 Work Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
@@ -128,17 +128,17 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                  className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white/80">
+              <Label htmlFor="password" className="text-gray-700">
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="password"
                   type="password"
@@ -147,10 +147,10 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
-                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                  className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
                 />
               </div>
-              <p className="text-xs text-white/40">Must be at least 8 characters</p>
+              <p className="text-xs text-gray-500">Must be at least 8 characters</p>
             </div>
 
             <div className="flex items-start gap-2">
@@ -160,13 +160,13 @@ export default function SignupPage() {
                 onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
                 className="mt-1"
               />
-              <Label htmlFor="terms" className="text-sm text-white/60 leading-relaxed cursor-pointer">
+              <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed cursor-pointer">
                 I agree to the{" "}
-                <Link href="/legal/terms" className="text-purple-400 hover:text-purple-300">
+                <Link href="/legal/terms" className="text-purple-600 hover:text-purple-700 font-medium">
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link href="/legal/privacy" className="text-purple-400 hover:text-purple-300">
+                <Link href="/legal/privacy" className="text-purple-600 hover:text-purple-700 font-medium">
                   Privacy Policy
                 </Link>
               </Label>
@@ -192,9 +192,9 @@ export default function SignupPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+              <Link href="/login" className="text-purple-600 hover:text-purple-700 font-medium">
                 Sign in
               </Link>
             </p>

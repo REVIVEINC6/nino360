@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { inviteUsers } from "@/app/(app)/tenant/users/actions"
+import { inviteUsers } from "@/app/(dashboard)/tenant/users/actions"
 import { toast } from "sonner"
 
 interface InviteDialogProps {

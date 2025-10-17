@@ -1,14 +1,40 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Plus, Plug } from "lucide-react"
+import { Search, Plus } from "lucide-react"
+import { IntegrationsTable } from "./integrations-table"
+import { listIntegrations } from "@/app/(dashboard)/admin/integrations/actions"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function IntegrationsManagement() {
   const [search, setSearch] = useState("")
+  const [integrations, setIntegrations] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await listIntegrations()
+        setIntegrations(data)
+      } catch (error) {
+        console.error("[v0] Failed to load integrations data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  if (loading) {
+    return <Skeleton className="h-[600px] w-full" />
+  }
+
+  const filteredIntegrations = integrations.filter((integration: any) =>
+    integration.name.toLowerCase().includes(search.toLowerCase()),
+  )
 
   return (
     <div className="space-y-6">
@@ -38,29 +64,7 @@ export function IntegrationsManagement() {
       </Card>
 
       {/* Integrations Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Integration</TableHead>
-                <TableHead>Provider</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Sync</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  <Plug className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No integrations configured. Add your first integration to get started.</p>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <IntegrationsTable integrations={filteredIntegrations} />
     </div>
   )
 }

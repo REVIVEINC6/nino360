@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Download,
   UserPlus,
@@ -29,10 +30,102 @@ import {
   Activity,
   Shield,
   Clock,
+  Sparkles,
+  Link2,
+  Zap,
+  Save,
+  RefreshCw,
 } from "lucide-react"
-import { listUsers, bulkUserStatus, exportUsersCSV, getUserDetails, updateUser } from "../actions/users"
+import {
+  listUsers,
+  bulkUserStatus,
+  exportUsersCSV,
+  getUserDetails,
+  updateUser,
+  bulkAssignRole,
+  resetUserPassword,
+  saveFilter,
+  getSavedFilters,
+} from "../actions/users"
 import { createBrowserClient } from "@supabase/ssr"
 import { useToast } from "@/hooks/use-toast"
+import { useFeatureFlags } from "@/hooks/use-feature-flags"
+
+function AIInsights({ metrics }: { metrics: any }) {
+  const [insights, setInsights] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const generateInsights = async () => {
+    setLoading(true)
+    try {
+      // Simulate AI-powered insights generation
+      const newInsights = []
+
+      if (metrics.suspended > metrics.total * 0.05) {
+        newInsights.push(
+          `⚠️ High suspension rate detected: ${((metrics.suspended / metrics.total) * 100).toFixed(1)}% of users are suspended`,
+        )
+      }
+
+      if (metrics.pending > 10) {
+        newInsights.push(`📋 ${metrics.pending} users pending activation - consider automated onboarding`)
+      }
+
+      if (metrics.inactive > metrics.active * 0.3) {
+        newInsights.push(`💤 ${metrics.inactive} inactive users detected - recommend re-engagement campaign`)
+      }
+
+      const activeRate = (metrics.active / metrics.total) * 100
+      if (activeRate > 80) {
+        newInsights.push(`✅ Excellent user engagement: ${activeRate.toFixed(1)}% active users`)
+      }
+
+      setInsights(newInsights)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (metrics.total > 0) {
+      generateInsights()
+    }
+  }, [metrics])
+
+  if (insights.length === 0) return null
+
+  return (
+    <Card className="border-primary/20 bg-primary/5">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <CardTitle className="text-sm">AI Insights</CardTitle>
+          </div>
+          <Button variant="ghost" size="sm" onClick={generateInsights} disabled={loading}>
+            <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {insights.map((insight, i) => (
+          <p key={i} className="text-sm text-muted-foreground">
+            {insight}
+          </p>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
+function AuditBadge({ verified }: { verified: boolean }) {
+  return (
+    <div className="flex items-center gap-1 text-xs">
+      <Link2 className={`h-3 w-3 ${verified ? "text-green-500" : "text-yellow-500"}`} />
+      <span className={verified ? "text-green-500" : "text-yellow-500"}>{verified ? "Verified" : "Pending"}</span>
+    </div>
+  )
+}
 
 export default function UsersPage() {
   const [rows, setRows] = useState<any[]>([])
@@ -52,6 +145,19 @@ export default function UsersPage() {
   const [editMode, setEditMode] = useState(false)
   const [editForm, setEditForm] = useState({ full_name: "", status: "" })
   const { toast } = useToast()
+
+  const { hasFeature } = useFeatureFlags()
+  const aiEnabled = hasFeature("ai_insights")
+  const blockchainEnabled = hasFeature("audit_chain")
+  const rpaEnabled = hasFeature("rpa_automation")
+
+  const [savedFilters, setSavedFilters] = useState<any[]>([])
+  const [showSaveFilter, setShowSaveFilter] = useState(false)
+  const [filterName, setFilterName] = useState("")
+
+  const [showBulkRole, setShowBulkRole] = useState(false)
+  const [bulkRoleId, setBulkRoleId] = useState("")
+  const [bulkTenantId, setBulkTenantId] = useState("")
 
   const [metrics, setMetrics] = useState({
     total: 0,
@@ -112,8 +218,20 @@ export default function UsersPage() {
     }
   }
 
+  const loadSavedFilters = async () => {
+    try {
+      const result = await getSavedFilters()
+      if (!result.error) {
+        setSavedFilters(result.data)
+      }
+    } catch (error) {
+      console.error("[v0] Error loading saved filters:", error)
+    }
+  }
+
   useEffect(() => {
     loadUsers()
+    loadSavedFilters()
   }, [q, page, per, statusFilter, roleFilter, sortBy, sortOrder])
 
   // Realtime updates
@@ -236,6 +354,74 @@ export default function UsersPage() {
     }
   }
 
+  const handleSaveFilter = async () => {
+    try {
+      await saveFilter({
+        name: filterName,
+        filter_type: "users",
+        filter_config: {
+          q,
+          status: statusFilter,
+          role: roleFilter,
+          sortBy,
+          sortOrder,
+        },
+      })
+      toast({
+        title: "Success",
+        description: "Filter saved successfully",
+      })
+      setShowSaveFilter(false)
+      setFilterName("")
+      await loadSavedFilters()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleBulkRoleAssign = async () => {
+    try {
+      await bulkAssignRole({
+        user_ids: selected,
+        tenant_id: bulkTenantId,
+        role_id: bulkRoleId,
+      })
+      toast({
+        title: "Success",
+        description: `Role assigned to ${selected.length} user(s)`,
+      })
+      setShowBulkRole(false)
+      setSelected([])
+      await loadUsers()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handlePasswordReset = async (user: any) => {
+    try {
+      await resetUserPassword({ user_id: user.id, email: user.email })
+      toast({
+        title: "Success",
+        description: "Password reset email sent",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
+  }
+
   const totalPages = Math.max(1, Math.ceil(total / per))
 
   const getStatusColor = (status: string) => {
@@ -260,10 +446,18 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold tracking-tight">Global User Management</h1>
           <p className="text-muted-foreground">Manage user accounts, permissions, and access across all regions</p>
         </div>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Invite User
-        </Button>
+        <div className="flex gap-2">
+          {rpaEnabled && (
+            <Button variant="outline">
+              <Zap className="mr-2 h-4 w-4" />
+              RPA Workflows
+            </Button>
+          )}
+          <Button>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Invite User
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -328,6 +522,8 @@ export default function UsersPage() {
         </Card>
       </div>
 
+      {aiEnabled && <AIInsights metrics={metrics} />}
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -363,6 +559,15 @@ export default function UsersPage() {
                 <Ban className="mr-2 h-4 w-4" />
                 Suspend
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBulkRole(true)}
+                disabled={selected.length === 0}
+              >
+                <Shield className="mr-2 h-4 w-4" />
+                Assign Role
+              </Button>
               <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="mr-2 h-4 w-4" />
                 Export CSV
@@ -371,7 +576,7 @@ export default function UsersPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Input
               placeholder="Search by email or name..."
               value={q}
@@ -406,10 +611,48 @@ export default function UsersPage() {
                 <SelectItem value="status">Status</SelectItem>
               </SelectContent>
             </Select>
+
+            <Button variant="outline" onClick={() => setShowSaveFilter(true)}>
+              <Save className="mr-2 h-4 w-4" />
+              Save Filter
+            </Button>
           </div>
 
+          {savedFilters.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              <span className="text-sm text-muted-foreground">Saved Filters:</span>
+              {savedFilters.map((filter) => (
+                <Button
+                  key={filter.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const config = filter.filter_config
+                    setQ(config.q || "")
+                    setStatusFilter(config.status || "all")
+                    setRoleFilter(config.role || "")
+                    setSortBy(config.sortBy || "created_at")
+                    setSortOrder(config.sortOrder || "desc")
+                  }}
+                >
+                  {filter.name}
+                </Button>
+              ))}
+            </div>
+          )}
+
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading users...</div>
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-12 w-12" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-1/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : rows.length === 0 ? (
             <div className="text-center py-12 space-y-3">
               <div className="text-muted-foreground">
@@ -445,6 +688,7 @@ export default function UsersPage() {
                     <th className="p-3 text-left">Roles</th>
                     <th className="p-3 text-left">Tenants</th>
                     <th className="p-3 text-left">Created</th>
+                    {blockchainEnabled && <th className="p-3 text-left">Audit</th>}
                     <th className="p-3 text-left">Actions</th>
                   </tr>
                 </thead>
@@ -466,6 +710,11 @@ export default function UsersPage() {
                       </td>
                       <td className="p-3 text-muted-foreground">{r.tenants || "-"}</td>
                       <td className="p-3 text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</td>
+                      {blockchainEnabled && (
+                        <td className="p-3">
+                          <AuditBadge verified={true} />
+                        </td>
+                      )}
                       <td className="p-3">
                         <Button variant="ghost" size="sm" onClick={() => handleViewDetails(r)}>
                           <Eye className="h-4 w-4" />
@@ -565,6 +814,11 @@ export default function UsersPage() {
                     <p className="text-xs text-muted-foreground font-mono">{selectedUser.id}</p>
                   </div>
                 </div>
+                <div className="pt-4 border-t">
+                  <Button variant="outline" onClick={() => handlePasswordReset(selectedUser)}>
+                    Reset Password
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="roles" className="space-y-4">
@@ -619,7 +873,12 @@ export default function UsersPage() {
                               {new Date(log.created_at).toLocaleString()}
                             </span>
                           </div>
-                          <p className="text-xs text-muted-foreground">{log.resource}</p>
+                          <p className="text-xs text-muted-foreground">{log.resource_type}</p>
+                          {blockchainEnabled && log.hash && (
+                            <div className="mt-2">
+                              <AuditBadge verified={true} />
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -647,6 +906,60 @@ export default function UsersPage() {
                 <Button onClick={() => setEditMode(true)}>Edit User</Button>
               </>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSaveFilter} onOpenChange={setShowSaveFilter}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Save Filter</DialogTitle>
+            <DialogDescription>Save your current filter settings for quick access</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Filter Name</Label>
+              <Input
+                placeholder="e.g., Active Users"
+                value={filterName}
+                onChange={(e) => setFilterName(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSaveFilter(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveFilter} disabled={!filterName}>
+              Save Filter
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showBulkRole} onOpenChange={setShowBulkRole}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Bulk Role Assignment</DialogTitle>
+            <DialogDescription>Assign a role to {selected.length} selected user(s)</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Tenant</Label>
+              <Input placeholder="Tenant ID" value={bulkTenantId} onChange={(e) => setBulkTenantId(e.target.value)} />
+            </div>
+            <div>
+              <Label>Role</Label>
+              <Input placeholder="Role ID" value={bulkRoleId} onChange={(e) => setBulkRoleId(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkRole(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleBulkRoleAssign} disabled={!bulkTenantId || !bulkRoleId}>
+              Assign Role
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -9,10 +9,10 @@ import { SceneParticles } from "./scene-particles"
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-gradient-to-b from-white via-slate-50 to-white">
       <SceneParticles />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white pointer-events-none" />
 
       <motion.div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
@@ -33,10 +33,10 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full glass-card neon-glow"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full backdrop-blur-xl bg-white/70 border border-slate-200/50 shadow-lg"
           >
             <Sparkles className="h-5 w-5 text-[#D0FF00]" />
-            <span className="text-sm font-medium bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+            <span className="text-sm font-medium bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
               The Superintelligent Enterprise OS
             </span>
           </motion.div>
@@ -58,11 +58,13 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl md:text-2xl text-white/70 text-balance max-w-3xl mx-auto leading-relaxed"
+            className="text-xl md:text-2xl text-slate-600 text-balance max-w-3xl mx-auto leading-relaxed"
           >
-            <span className="text-[#D0FF00]">Generative AI</span> •{" "}
-            <span className="text-[#F81CE5]">Intelligent AI</span> • <span className="text-[#8B5CF6]">ML</span> •{" "}
-            <span className="text-[#D0FF00]">Automation</span> • <span className="text-[#F81CE5]">Blockchain</span>
+            <span className="text-[#4F46E5] font-semibold">Generative AI</span> •{" "}
+            <span className="text-[#F81CE5] font-semibold">Intelligent AI</span> •{" "}
+            <span className="text-[#8B5CF6] font-semibold">ML</span> •{" "}
+            <span className="text-[#D0FF00] font-semibold">Automation</span> •{" "}
+            <span className="text-[#F81CE5] font-semibold">Blockchain</span>
             <br />
             unified for next-gen enterprise transformation.
           </motion.p>
@@ -86,7 +88,7 @@ export function HeroSection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-[#8B5CF6]/50 text-white hover:bg-white/10 text-lg px-8 py-6 gap-2 bg-transparent neon-glow-hover"
+                className="border-[#8B5CF6]/50 text-slate-900 hover:bg-slate-100 text-lg px-8 py-6 gap-2 bg-white/50 backdrop-blur-sm"
               >
                 ✨ Watch the Copilot
               </Button>
@@ -97,11 +99,11 @@ export function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-16 overflow-hidden glass-card py-4"
+            className="mt-16 overflow-hidden backdrop-blur-xl bg-white/70 border border-slate-200/50 rounded-2xl py-4 shadow-lg"
           >
             <div className="flex items-center gap-8 animate-marquee whitespace-nowrap">
               {[...Array(2)].map((_, i) => (
-                <div key={i} className="flex items-center gap-8 text-sm text-white/60">
+                <div key={i} className="flex items-center gap-8 text-sm text-slate-600">
                   <span>1200+ Enterprises</span>
                   <span className="text-[#8B5CF6]">•</span>
                   <span>30+ Countries</span>

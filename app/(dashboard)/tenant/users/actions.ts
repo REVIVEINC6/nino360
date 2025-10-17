@@ -3,87 +3,123 @@
 import { createServerClient } from "@/lib/supabase/server"
 import { z } from "zod"
 import { rateLimit } from "@/lib/rate-limit"
+import { generateText } from "ai"
+import crypto from "crypto"
 
-// Validation schemas
 const inviteSchema = z.object({
-  email: z.string().email(),
+  invites: z.array(
+    z.object({
+      email: z.string().email().toLowerCase().trim(),
+      role: z.enum(["tenant_admin", "manager", "member", "viewer"]),
+    }),
+  ),
+})
+
+const setRoleSchema = z.object({
+  userId: z.string().uuid(),
   role: z.enum(["tenant_admin", "manager", "member", "viewer"]),
 })
 
-const bulkInviteSchema = z.object({
-  emails: z.array(z.string().email()),
-  role: z.enum(["tenant_admin", "manager", "member", "viewer"]),
+const setStatusSchema = z.object({
+  userId: z.string().uuid(),
+  status: z.enum(["active", "inactive"]),
 })
 
-const updateRoleSchema = z.object({
-  user_id: z.string().uuid(),
-  role: z.enum(["tenant_admin", "manager", "member", "viewer"]),
-})
+export async function getContext() {
+  try {
+    const supabase = await createServerClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-// Helper to get current tenant
-async function getCurrentTenant() {
-  const supabase = await createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    if (!user) {
+      throw new Error("Not authenticated")
+    }
 
-  if (!user) {
-    throw new Error("Not authenticated")
-  }
+    // Get active tenant membership
+    const { data: membership } = await supabase
+      .from("tenant_members")
+      .select(
+        `
+        tenant_id,
+        role,
+        status,
+        tenants!inner (
+          id,
+          slug,
+          name,
+          status
+        )
+      `,
+      )
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .single()
 
-  // Get tenant from cookie or primary tenant
-  const { data: membership } = await supabase
-    .from("tenant_members")
-    .select("tenant_id, tenants(id, slug, name)")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .single()
+    if (!membership) {
+      return {
+        tenantId: null,
+        slug: null,
+        myRole: null,
+        features: {},
+        canManage: false,
+      }
+    }
 
-  if (!membership) {
-    throw new Error("No tenant membership found")
-  }
+    // Get feature flags
+    const { data: features } = await supabase
+      .from("feature_flags")
+      .select("key, enabled")
+      .eq("tenant_id", membership.tenant_id)
 
-  return {
-    tenant_id: membership.tenant_id,
-    user_id: user.id,
+    const featureMap = (features || []).reduce(
+      (acc, f) => {
+        acc[f.key] = f.enabled
+        return acc
+      },
+      {} as Record<string, boolean>,
+    )
+
+    const canManage = ["tenant_admin", "manager"].includes(membership.role)
+
+    return {
+      tenantId: membership.tenant_id,
+      slug: (membership.tenants as any).slug,
+      myRole: membership.role,
+      features: featureMap,
+      canManage,
+    }
+  } catch (error: any) {
+    console.error("[v0] Error in getContext:", error)
+    return {
+      tenantId: null,
+      slug: null,
+      myRole: null,
+      features: {},
+      canManage: false,
+    }
   }
 }
 
-// Helper to verify tenant admin
-async function verifyTenantAdmin() {
-  const supabase = await createServerClient()
-  const { tenant_id, user_id } = await getCurrentTenant()
-
-  const { data: member } = await supabase
-    .from("tenant_members")
-    .select("role")
-    .eq("tenant_id", tenant_id)
-    .eq("user_id", user_id)
-    .single()
-
-  if (!member || !["tenant_admin", "manager"].includes(member.role)) {
-    throw new Error("Insufficient permissions")
-  }
-
-  return { tenant_id, user_id }
-}
-
-// List tenant members
-export async function listTenantMembers(params: {
+export async function listMembers(params?: {
   q?: string
-  page?: number
-  per?: number
   role?: string
-  status?: string
-  sortBy?: string
-  sortOrder?: string
+  status?: "active" | "invited" | "inactive"
+  page?: number
+  pageSize?: number
+  sort?: "name" | "role" | "last_seen" | "created_at"
+  dir?: "asc" | "desc"
 }) {
   try {
-    const { tenant_id } = await getCurrentTenant()
+    const context = await getContext()
+    if (!context.tenantId) {
+      return { rows: [], total: 0 }
+    }
+
     const supabase = await createServerClient()
+    const { q = "", role, status, page = 1, pageSize = 20, sort = "created_at", dir = "desc" } = params || {}
 
-    const { q = "", page = 1, per = 20, role, status, sortBy = "joined_at", sortOrder = "desc" } = params
-
+    // Build query
     let query = supabase
       .from("tenant_members")
       .select(
@@ -91,461 +127,578 @@ export async function listTenantMembers(params: {
         user_id,
         role,
         status,
-        joined_at,
-        invited_at,
+        created_at,
         users:user_id (
           email,
-          full_name
+          user_profiles (
+            full_name,
+            avatar_url,
+            title,
+            last_login_at
+          )
         )
       `,
         { count: "exact" },
       )
-      .eq("tenant_id", tenant_id)
+      .eq("tenant_id", context.tenantId)
 
-    // Search
+    // Search filter
     if (q) {
-      query = query.or(`users.email.ilike.%${q}%,users.full_name.ilike.%${q}%`)
+      query = query.or(`users.email.ilike.%${q}%,users.user_profiles.full_name.ilike.%${q}%`)
     }
 
-    // Filters
+    // Role filter
     if (role) {
       query = query.eq("role", role)
     }
+
+    // Status filter
     if (status) {
       query = query.eq("status", status)
     }
 
     // Sorting
-    query = query.order(sortBy, { ascending: sortOrder === "asc" })
+    const sortColumn =
+      sort === "name"
+        ? "users.user_profiles.full_name"
+        : sort === "last_seen"
+          ? "users.user_profiles.last_login_at"
+          : sort
+    query = query.order(sortColumn, { ascending: dir === "asc" })
 
     // Pagination
-    const from = (page - 1) * per
-    const to = from + per - 1
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
     query = query.range(from, to)
 
     const { data, error, count } = await query
 
     if (error) {
       console.error("[v0] Error listing members:", error)
-      return { members: [], total: 0, error: error.message }
+      return { rows: [], total: 0 }
     }
 
-    const members = data.map((m: any) => ({
+    // Transform data
+    const rows = (data || []).map((m: any) => ({
       user_id: m.user_id,
       email: m.users?.email || "",
-      full_name: m.users?.full_name || "",
+      full_name: m.users?.user_profiles?.full_name || null,
+      avatar_url: m.users?.user_profiles?.avatar_url || null,
+      title: m.users?.user_profiles?.title || null,
       role: m.role,
       status: m.status,
-      joined_at: m.joined_at,
-      invited_at: m.invited_at,
+      mfa_enabled: false, // TODO: Implement MFA tracking
+      last_login_at: m.users?.user_profiles?.last_login_at || null,
+      created_at: m.created_at,
     }))
 
-    return { members, total: count || 0 }
+    return { rows, total: count || 0 }
   } catch (error: any) {
-    console.error("[v0] Error in listTenantMembers:", error)
-    return { members: [], total: 0, error: error.message }
+    console.error("[v0] Error in listMembers:", error)
+    return { rows: [], total: 0 }
   }
 }
 
-// Invite user
-export async function inviteUser(input: z.infer<typeof inviteSchema>) {
+export async function suggestRole(email: string, context?: string) {
   try {
-    await rateLimit("invite-user", 10, 60000) // 10 per minute
-    const { tenant_id, user_id } = await verifyTenantAdmin()
+    await rateLimit("ai-suggest-role", 10, 60000)
+
+    const { text } = await generateText({
+      model: "openai/gpt-4o-mini",
+      prompt: `Based on the email "${email}" and context: "${context || "No additional context"}", suggest the most appropriate role for this user in a multi-tenant HRMS platform.
+      
+Available roles:
+- tenant_admin: Full administrative access to the tenant
+- manager: Can manage users, view reports, configure settings
+- member: Standard access to core features
+- viewer: Read-only access
+
+Respond with ONLY the role name (tenant_admin, manager, member, or viewer) and a brief one-sentence explanation.`,
+      maxTokens: 100,
+    })
+
+    const role = text.toLowerCase().includes("tenant_admin")
+      ? "tenant_admin"
+      : text.toLowerCase().includes("manager")
+        ? "manager"
+        : text.toLowerCase().includes("viewer")
+          ? "viewer"
+          : "member"
+
+    return { role, explanation: text }
+  } catch (error: any) {
+    console.error("[v0] Error in suggestRole:", error)
+    return { role: "member", explanation: "Default role assigned" }
+  }
+}
+
+export async function inviteUsers(input: z.infer<typeof inviteSchema>) {
+  try {
+    await rateLimit("invite-users", 10, 60000)
+    const context = await getContext()
+
+    if (!context.canManage) {
+      return { success: false, error: "Insufficient permissions", inserted: 0, duplicates: 0, invalid: 0 }
+    }
+
     const validated = inviteSchema.parse(input)
     const supabase = await createServerClient()
 
-    // Check if user already exists
-    const { data: existingUser } = await supabase.from("users").select("id").eq("email", validated.email).single()
+    let inserted = 0
+    let duplicates = 0
+    let invalid = 0
 
-    if (existingUser) {
-      // Check if already a member
-      const { data: existingMember } = await supabase
-        .from("tenant_members")
-        .select("*")
-        .eq("tenant_id", tenant_id)
-        .eq("user_id", existingUser.id)
-        .single()
+    for (const invite of validated.invites) {
+      try {
+        // Check if already a member
+        const { data: existing } = await supabase
+          .from("tenant_members")
+          .select("user_id")
+          .eq("tenant_id", context.tenantId)
+          .eq("users.email", invite.email)
+          .maybeSingle()
 
-      if (existingMember) {
-        return { error: "User is already a member" }
+        if (existing) {
+          duplicates++
+          continue
+        }
+
+        // Create invitation record
+        const { error: inviteError } = await supabase.from("tenant_members").insert({
+          tenant_id: context.tenantId,
+          user_id: null, // Will be filled when user accepts
+          role: invite.role,
+          status: "invited",
+        })
+
+        if (inviteError) {
+          console.error("[v0] Error creating invite:", inviteError)
+          invalid++
+          continue
+        }
+
+        // Audit log with hash chain
+        await appendAuditLog(supabase, context.tenantId!, "user:invite", "tenant_member", invite.email, {
+          email: invite.email,
+          role: invite.role,
+        })
+
+        inserted++
+      } catch (err) {
+        console.error("[v0] Error processing invite:", err)
+        invalid++
       }
     }
 
-    // Create invitation
-    const token = crypto.randomUUID()
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 7) // 7 days
-
-    const { error: inviteError } = await supabase.from("invitations").insert({
-      tenant_id,
-      email: validated.email,
-      role: validated.role,
-      token,
-      invited_by: user_id,
-      expires_at: expiresAt.toISOString(),
-      status: "pending",
-    })
-
-    if (inviteError) {
-      console.error("[v0] Error creating invitation:", inviteError)
-      return { error: inviteError.message }
-    }
-
-    // TODO: Send invitation email
-
-    // Audit log
-    await supabase.from("audit_log").insert({
-      tenant_id,
-      user_id,
-      action: "invite_user",
-      resource: "tenant_member",
-      payload: { email: validated.email, role: validated.role },
-    })
-
-    return { success: true }
+    return { success: true, inserted, duplicates, invalid }
   } catch (error: any) {
-    console.error("[v0] Error in inviteUser:", error)
-    return { error: error.message }
+    console.error("[v0] Error in inviteUsers:", error)
+    return { success: false, error: error.message, inserted: 0, duplicates: 0, invalid: 0 }
   }
 }
 
-// List invitations
-export async function listInvitations() {
+export async function resendInvite(email: string) {
   try {
-    const { tenant_id } = await getCurrentTenant()
-    const supabase = await createServerClient()
+    await rateLimit("resend-invite", 5, 60000)
+    const context = await getContext()
 
-    const { data, error } = await supabase
-      .from("invitations")
-      .select(
-        `
-        *,
-        invited_by_user:invited_by (
-          email
-        )
-      `,
-      )
-      .eq("tenant_id", tenant_id)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false })
-
-    if (error) {
-      console.error("[v0] Error listing invitations:", error)
-      return { invitations: [], error: error.message }
+    if (!context.canManage) {
+      return { success: false, error: "Insufficient permissions" }
     }
 
-    const invitations = data.map((inv: any) => ({
-      ...inv,
-      invited_by_email: inv.invited_by_user?.email || "",
-    }))
-
-    return { invitations }
-  } catch (error: any) {
-    console.error("[v0] Error in listInvitations:", error)
-    return { invitations: [], error: error.message }
-  }
-}
-
-// Resend invite
-export async function resendInvite(inviteId: string) {
-  try {
-    await rateLimit("resend-invite", 5, 60000) // 5 per minute
-    await verifyTenantAdmin()
     const supabase = await createServerClient()
 
-    // Update expires_at
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 7)
-
-    const { error } = await supabase
-      .from("invitations")
-      .update({ expires_at: expiresAt.toISOString() })
-      .eq("id", inviteId)
-
-    if (error) {
-      console.error("[v0] Error resending invite:", error)
-      return { error: error.message }
-    }
-
-    // TODO: Resend invitation email
+    // TODO: Implement email sending logic
+    // For now, just log the action
+    await appendAuditLog(supabase, context.tenantId!, "user:invite:resend", "tenant_member", email, { email })
 
     return { success: true }
   } catch (error: any) {
     console.error("[v0] Error in resendInvite:", error)
-    return { error: error.message }
+    return { success: false, error: error.message }
   }
 }
 
-// Cancel invite
-export async function cancelInvite(inviteId: string) {
+export async function revokeInvite(email: string) {
   try {
-    await verifyTenantAdmin()
-    const supabase = await createServerClient()
+    await rateLimit("revoke-invite", 5, 60000)
+    const context = await getContext()
 
-    const { error } = await supabase.from("invitations").update({ status: "cancelled" }).eq("id", inviteId)
-
-    if (error) {
-      console.error("[v0] Error cancelling invite:", error)
-      return { error: error.message }
+    if (!context.canManage) {
+      return { success: false, error: "Insufficient permissions" }
     }
 
-    return { success: true }
-  } catch (error: any) {
-    console.error("[v0] Error in cancelInvite:", error)
-    return { error: error.message }
-  }
-}
-
-// Update member role
-export async function updateMemberRole(input: z.infer<typeof updateRoleSchema>) {
-  try {
-    await rateLimit("update-role", 10, 60000) // 10 per minute
-    const { tenant_id, user_id } = await verifyTenantAdmin()
-    const validated = updateRoleSchema.parse(input)
     const supabase = await createServerClient()
 
+    // Delete invited member record
     const { error } = await supabase
       .from("tenant_members")
-      .update({ role: validated.role })
-      .eq("tenant_id", tenant_id)
-      .eq("user_id", validated.user_id)
+      .delete()
+      .eq("tenant_id", context.tenantId)
+      .eq("status", "invited")
+      .eq("users.email", email)
 
     if (error) {
-      console.error("[v0] Error updating role:", error)
-      return { error: error.message }
+      console.error("[v0] Error revoking invite:", error)
+      return { success: false, error: error.message }
     }
 
-    // Audit log
-    await supabase.from("audit_log").insert({
-      tenant_id,
-      user_id,
-      action: "update_member_role",
-      resource: "tenant_member",
-      payload: { target_user_id: validated.user_id, new_role: validated.role },
-    })
+    await appendAuditLog(supabase, context.tenantId!, "user:invite:revoke", "tenant_member", email, { email })
 
     return { success: true }
   } catch (error: any) {
-    console.error("[v0] Error in updateMemberRole:", error)
-    return { error: error.message }
+    console.error("[v0] Error in revokeInvite:", error)
+    return { success: false, error: error.message }
   }
 }
 
-// Remove member
-export async function removeMember(userId: string) {
+export async function setRole(input: z.infer<typeof setRoleSchema>) {
   try {
-    await rateLimit("remove-member", 5, 60000) // 5 per minute
-    const { tenant_id, user_id } = await verifyTenantAdmin()
-    const supabase = await createServerClient()
+    await rateLimit("set-role", 10, 60000)
+    const context = await getContext()
 
-    // Prevent self-removal
-    if (userId === user_id) {
-      return { error: "Cannot remove yourself" }
+    if (!context.canManage) {
+      return { success: false, error: "Insufficient permissions" }
     }
 
-    const { error } = await supabase.from("tenant_members").delete().eq("tenant_id", tenant_id).eq("user_id", userId)
-
-    if (error) {
-      console.error("[v0] Error removing member:", error)
-      return { error: error.message }
-    }
-
-    // Audit log
-    await supabase.from("audit_log").insert({
-      tenant_id,
-      user_id,
-      action: "remove_member",
-      resource: "tenant_member",
-      payload: { removed_user_id: userId },
-    })
-
-    return { success: true }
-  } catch (error: any) {
-    console.error("[v0] Error in removeMember:", error)
-    return { error: error.message }
-  }
-}
-
-// Bulk invite
-export async function bulkInvite(input: z.infer<typeof bulkInviteSchema>) {
-  try {
-    await rateLimit("bulk-invite", 3, 60000) // 3 per minute
-    const { tenant_id, user_id } = await verifyTenantAdmin()
-    const validated = bulkInviteSchema.parse(input)
+    const validated = setRoleSchema.parse(input)
     const supabase = await createServerClient()
 
-    let invited = 0
-    const errors: string[] = []
+    // Get current role
+    const { data: currentMember } = await supabase
+      .from("tenant_members")
+      .select("role")
+      .eq("tenant_id", context.tenantId)
+      .eq("user_id", validated.userId)
+      .single()
 
-    for (const email of validated.emails) {
-      try {
-        // Check if user already exists
-        const { data: existingUser } = await supabase.from("users").select("id").eq("email", email).single()
+    if (!currentMember) {
+      return { success: false, error: "User not found" }
+    }
 
-        if (existingUser) {
-          // Check if already a member
-          const { data: existingMember } = await supabase
-            .from("tenant_members")
-            .select("*")
-            .eq("tenant_id", tenant_id)
-            .eq("user_id", existingUser.id)
-            .single()
+    // Prevent demoting last admin
+    if (currentMember.role === "tenant_admin" && validated.role !== "tenant_admin") {
+      const { count } = await supabase
+        .from("tenant_members")
+        .select("*", { count: "exact", head: true })
+        .eq("tenant_id", context.tenantId)
+        .eq("role", "tenant_admin")
+        .eq("status", "active")
 
-          if (existingMember) {
-            errors.push(`${email}: Already a member`)
-            continue
-          }
-        }
-
-        // Create invitation
-        const token = crypto.randomUUID()
-        const expiresAt = new Date()
-        expiresAt.setDate(expiresAt.getDate() + 7)
-
-        const { error: inviteError } = await supabase.from("invitations").insert({
-          tenant_id,
-          email,
-          role: validated.role,
-          token,
-          invited_by: user_id,
-          expires_at: expiresAt.toISOString(),
-          status: "pending",
-        })
-
-        if (inviteError) {
-          errors.push(`${email}: ${inviteError.message}`)
-        } else {
-          invited++
-        }
-      } catch (err: any) {
-        errors.push(`${email}: ${err.message}`)
+      if (count === 1) {
+        return { success: false, error: "Cannot demote the last tenant admin" }
       }
     }
 
-    // Audit log
-    await supabase.from("audit_log").insert({
-      tenant_id,
-      user_id,
-      action: "bulk_invite",
-      resource: "tenant_member",
-      payload: { invited, errors },
-    })
-
-    return { invited, errors }
-  } catch (error: any) {
-    console.error("[v0] Error in bulkInvite:", error)
-    return { invited: 0, errors: [error.message] }
-  }
-}
-
-// Export members
-export async function exportMembers(q?: string) {
-  try {
-    await rateLimit("export-members", 3, 60000) // 3 per minute
-    const { tenant_id } = await getCurrentTenant()
-    const supabase = await createServerClient()
-
-    let query = supabase
+    // Update role
+    const { error } = await supabase
       .from("tenant_members")
-      .select(
-        `
-        user_id,
-        role,
-        status,
-        joined_at,
-        users:user_id (
-          email,
-          full_name
-        )
-      `,
-      )
-      .eq("tenant_id", tenant_id)
-
-    if (q) {
-      query = query.or(`users.email.ilike.%${q}%,users.full_name.ilike.%${q}%`)
-    }
-
-    const { data, error } = await query
+      .update({ role: validated.role })
+      .eq("tenant_id", context.tenantId)
+      .eq("user_id", validated.userId)
 
     if (error) {
-      throw new Error(error.message)
+      console.error("[v0] Error updating role:", error)
+      return { success: false, error: error.message }
     }
 
-    // Generate CSV
-    const headers = ["Email", "Full Name", "Role", "Status", "Joined"]
-    const rows = data.map((m: any) => [
-      m.users?.email || "",
-      m.users?.full_name || "",
-      m.role,
-      m.status,
-      m.joined_at ? new Date(m.joined_at).toLocaleDateString() : "",
-    ])
+    // Audit log
+    await appendAuditLog(supabase, context.tenantId!, "user:role:update", "tenant_member", validated.userId, {
+      from: currentMember.role,
+      to: validated.role,
+    })
 
-    const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n")
-
-    return csv
+    return { success: true }
   } catch (error: any) {
-    console.error("[v0] Error in exportMembers:", error)
-    throw error
+    console.error("[v0] Error in setRole:", error)
+    return { success: false, error: error.message }
   }
 }
 
-// Get member details
-export async function getMemberDetails(userId: string) {
+export async function setStatus(input: z.infer<typeof setStatusSchema>) {
   try {
-    const { tenant_id } = await getCurrentTenant()
+    await rateLimit("set-status", 10, 60000)
+    const context = await getContext()
+
+    if (!context.canManage) {
+      return { success: false, error: "Insufficient permissions" }
+    }
+
+    const validated = setStatusSchema.parse(input)
     const supabase = await createServerClient()
 
-    // Get member info
-    const { data: member } = await supabase
+    // Get current status
+    const { data: currentMember } = await supabase
       .from("tenant_members")
-      .select(
-        `
-        *,
-        users:user_id (
-          email,
-          full_name
-        )
-      `,
-      )
-      .eq("tenant_id", tenant_id)
-      .eq("user_id", userId)
+      .select("status")
+      .eq("tenant_id", context.tenantId)
+      .eq("user_id", validated.userId)
       .single()
 
-    if (!member) {
-      throw new Error("Member not found")
+    if (!currentMember) {
+      return { success: false, error: "User not found" }
     }
 
-    // Get permissions (from role)
-    const { data: rolePerms } = await supabase
-      .from("role_permissions")
-      .select(
-        `
-        permissions:permission_id (
-          key,
-          description
-        )
-      `,
-      )
-      .eq("role_id", member.role)
+    // Update status
+    const { error } = await supabase
+      .from("tenant_members")
+      .update({ status: validated.status })
+      .eq("tenant_id", context.tenantId)
+      .eq("user_id", validated.userId)
 
-    // Get activity logs
-    const { data: activity } = await supabase
+    if (error) {
+      console.error("[v0] Error updating status:", error)
+      return { success: false, error: error.message }
+    }
+
+    // Audit log
+    await appendAuditLog(supabase, context.tenantId!, "user:status:update", "tenant_member", validated.userId, {
+      from: currentMember.status,
+      to: validated.status,
+    })
+
+    return { success: true }
+  } catch (error: any) {
+    console.error("[v0] Error in setStatus:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function bulkImportCsv(file: File, role: string) {
+  try {
+    await rateLimit("bulk-import", 3, 60000)
+    const context = await getContext()
+
+    if (!context.canManage) {
+      return { success: false, error: "Insufficient permissions", inserted: 0, duplicates: 0, invalid: 0 }
+    }
+
+    // Parse CSV
+    const text = await file.text()
+    const lines = text.split("\n").filter((line) => line.trim())
+
+    // Extract emails (handle CSV with or without headers)
+    const emails = lines
+      .map((line) => {
+        const parts = line.split(",")
+        return parts[0].trim().toLowerCase()
+      })
+      .filter((email) => email.includes("@"))
+
+    // Validate with AI
+    const validEmails = []
+    for (const email of emails) {
+      if (z.string().email().safeParse(email).success) {
+        validEmails.push(email)
+      }
+    }
+
+    // Invite users
+    const result = await inviteUsers({
+      invites: validEmails.map((email) => ({ email, role: role as any })),
+    })
+
+    return result
+  } catch (error: any) {
+    console.error("[v0] Error in bulkImportCsv:", error)
+    return { success: false, error: error.message, inserted: 0, duplicates: 0, invalid: 0 }
+  }
+}
+
+export async function getUserAudit(userIdOrEmail: string, limit = 20) {
+  try {
+    const context = await getContext()
+    if (!context.tenantId) {
+      return []
+    }
+
+    const supabase = await createServerClient()
+
+    const { data, error } = await supabase
       .from("audit_log")
       .select("*")
-      .eq("tenant_id", tenant_id)
-      .eq("user_id", userId)
+      .eq("tenant_id", context.tenantId)
+      .or(`actor_user_id.eq.${userIdOrEmail},entity_id.eq.${userIdOrEmail}`)
       .order("created_at", { ascending: false })
-      .limit(10)
+      .limit(limit)
+
+    if (error) {
+      console.error("[v0] Error fetching audit log:", error)
+      return []
+    }
+
+    return data || []
+  } catch (error: any) {
+    console.error("[v0] Error in getUserAudit:", error)
+    return []
+  }
+}
+
+export async function verifyHash(hash: string) {
+  try {
+    const context = await getContext()
+    if (!context.tenantId) {
+      return { valid: false, error: "No tenant context" }
+    }
+
+    const supabase = await createServerClient()
+
+    // Find the audit entry
+    const { data: entry, error } = await supabase.from("audit_log").select("*").eq("hash", hash).single()
+
+    if (error || !entry) {
+      return { valid: false, error: "Hash not found" }
+    }
+
+    // Verify hash integrity
+    const computedHash = computeAuditHash(
+      entry.tenant_id,
+      entry.action,
+      entry.entity,
+      entry.entity_id,
+      entry.diff,
+      entry.prev_hash,
+    )
+
+    const valid = computedHash === entry.hash
 
     return {
-      member,
-      permissions: rolePerms?.map((rp: any) => rp.permissions) || [],
-      activity: activity || [],
+      valid,
+      record: entry,
+      computedHash,
     }
   } catch (error: any) {
-    console.error("[v0] Error in getMemberDetails:", error)
-    throw error
+    console.error("[v0] Error in verifyHash:", error)
+    return { valid: false, error: error.message }
   }
+}
+
+export async function detectAnomalies(userId: string) {
+  try {
+    await rateLimit("detect-anomalies", 5, 60000)
+    const context = await getContext()
+
+    if (!context.tenantId) {
+      return { anomalies: [], risk: "low" }
+    }
+
+    // Get recent audit logs
+    const logs = await getUserAudit(userId, 50)
+
+    // Use AI to analyze patterns
+    const { text } = await generateText({
+      model: "openai/gpt-4o-mini",
+      prompt: `Analyze the following user activity logs for anomalies or suspicious patterns:
+
+${logs.map((log) => `- ${log.action} on ${log.entity} at ${log.created_at}`).join("\n")}
+
+Identify any unusual patterns such as:
+- Rapid role changes
+- Unusual access times
+- Suspicious bulk operations
+- Permission escalation attempts
+
+Respond with a JSON object: { "anomalies": ["description1", "description2"], "risk": "low|medium|high" }`,
+      maxTokens: 300,
+    })
+
+    try {
+      const result = JSON.parse(text)
+      return result
+    } catch {
+      return { anomalies: [], risk: "low" }
+    }
+  } catch (error: any) {
+    console.error("[v0] Error in detectAnomalies:", error)
+    return { anomalies: [], risk: "low" }
+  }
+}
+
+export async function automateOnboarding(userId: string, role: string) {
+  try {
+    const context = await getContext()
+    if (!context.tenantId) {
+      return { success: false, error: "No tenant context" }
+    }
+
+    const supabase = await createServerClient()
+
+    // Step 1: Send welcome email (stub)
+    console.log("[v0] RPA: Sending welcome email to user", userId)
+
+    // Step 2: Assign default permissions based on role
+    console.log("[v0] RPA: Assigning default permissions for role", role)
+
+    // Step 3: Create default workspace/folders
+    console.log("[v0] RPA: Creating default workspace for user", userId)
+
+    // Step 4: Schedule onboarding tasks
+    console.log("[v0] RPA: Scheduling onboarding tasks")
+
+    // Audit log
+    await appendAuditLog(supabase, context.tenantId, "user:onboarding:automated", "tenant_member", userId, {
+      role,
+      steps: ["welcome_email", "permissions", "workspace", "tasks"],
+    })
+
+    return { success: true, steps: 4 }
+  } catch (error: any) {
+    console.error("[v0] Error in automateOnboarding:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+async function appendAuditLog(
+  supabase: any,
+  tenantId: string,
+  action: string,
+  entity: string,
+  entityId: string,
+  diff: any,
+) {
+  try {
+    // Get the last audit entry to chain hashes
+    const { data: lastEntry } = await supabase
+      .from("audit_log")
+      .select("hash")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single()
+
+    const prevHash = lastEntry?.hash || "0000000000000000"
+
+    // Compute new hash
+    const hash = computeAuditHash(tenantId, action, entity, entityId, diff, prevHash)
+
+    // Insert audit entry
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    await supabase.from("audit_log").insert({
+      tenant_id: tenantId,
+      actor_user_id: user?.id || null,
+      action,
+      entity,
+      entity_id: entityId,
+      diff,
+      hash,
+      prev_hash: prevHash,
+    })
+  } catch (error) {
+    console.error("[v0] Error appending audit log:", error)
+  }
+}
+
+function computeAuditHash(
+  tenantId: string,
+  action: string,
+  entity: string,
+  entityId: string,
+  diff: any,
+  prevHash: string,
+): string {
+  const data = JSON.stringify({ tenantId, action, entity, entityId, diff, prevHash })
+  return crypto.createHash("sha256").update(data).digest("hex")
 }

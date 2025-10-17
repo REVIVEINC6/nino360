@@ -18,7 +18,7 @@ export interface AuditLogEntry {
   action: AuditAction
   resource_type: string
   resource_id?: string
-  metadata?: Record<string, any>
+  details?: Record<string, any>
   ip_address?: string
   user_agent?: string
 }
@@ -40,10 +40,7 @@ export const auditLogger = {
         action: entry.action,
         resource_type: entry.resource_type,
         resource_id: entry.resource_id,
-        metadata: entry.metadata,
-        ip_address: entry.ip_address,
-        user_agent: entry.user_agent,
-        created_at: new Date().toISOString(),
+        details: entry.details,
       })
     } catch (error) {
       console.error("[Audit] Log error:", error)
@@ -59,7 +56,7 @@ export const auditLogger = {
     userId: string,
     resourceType: string,
     resourceId: string,
-    metadata?: Record<string, any>,
+    details?: Record<string, any>,
   ): Promise<void> {
     await this.log({
       tenant_id: tenantId,
@@ -67,7 +64,7 @@ export const auditLogger = {
       action: "create",
       resource_type: resourceType,
       resource_id: resourceId,
-      metadata,
+      details,
     })
   },
 
@@ -79,7 +76,7 @@ export const auditLogger = {
     userId: string,
     resourceType: string,
     resourceId: string,
-    metadata?: Record<string, any>,
+    details?: Record<string, any>,
   ): Promise<void> {
     await this.log({
       tenant_id: tenantId,
@@ -87,7 +84,7 @@ export const auditLogger = {
       action: "update",
       resource_type: resourceType,
       resource_id: resourceId,
-      metadata,
+      details,
     })
   },
 
@@ -99,7 +96,7 @@ export const auditLogger = {
     userId: string,
     resourceType: string,
     resourceId: string,
-    metadata?: Record<string, any>,
+    details?: Record<string, any>,
   ): Promise<void> {
     await this.log({
       tenant_id: tenantId,
@@ -107,7 +104,7 @@ export const auditLogger = {
       action: "delete",
       resource_type: resourceType,
       resource_id: resourceId,
-      metadata,
+      details,
     })
   },
 
@@ -118,14 +115,14 @@ export const auditLogger = {
     tenantId: string,
     userId: string,
     resourceType: string,
-    metadata?: Record<string, any>,
+    details?: Record<string, any>,
   ): Promise<void> {
     await this.log({
       tenant_id: tenantId,
       user_id: userId,
       action: "export",
       resource_type: resourceType,
-      metadata,
+      details,
     })
   },
 }
@@ -139,7 +136,7 @@ export function withAudit<T extends (...args: any[]) => Promise<any>>(
     action: AuditAction
     resourceType: string
     getResourceId?: (...args: Parameters<T>) => string | undefined
-    getMetadata?: (...args: Parameters<T>) => Record<string, any> | undefined
+    getDetails?: (...args: Parameters<T>) => Record<string, any> | undefined
   },
 ): T {
   return (async (...args: Parameters<T>) => {
@@ -159,7 +156,7 @@ export function withAudit<T extends (...args: any[]) => Promise<any>>(
           action: options.action,
           resource_type: options.resourceType,
           resource_id: options.getResourceId?.(...args),
-          metadata: options.getMetadata?.(...args),
+          details: options.getDetails?.(...args),
         })
       }
     } catch (error) {

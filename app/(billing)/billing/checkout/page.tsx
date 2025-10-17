@@ -40,37 +40,10 @@ function CheckoutContent() {
 
       if (!response.ok) throw new Error(data.message || "Failed to create checkout session")
 
-      // Redirect to payment provider
       if (data.url) {
-        // Stripe checkout
         window.location.href = data.url
-      } else if (data.order_id) {
-        // Razorpay checkout
-        const options = {
-          key: data.key_id,
-          amount: data.amount,
-          currency: data.currency,
-          order_id: data.order_id,
-          name: "Nino360",
-          description: `${selectedPlan.name} Plan - ${interval === "month" ? "Monthly" : "Yearly"}`,
-          handler: (response: any) => {
-            toast({
-              title: "Payment successful!",
-              description: "Your subscription is now active",
-            })
-            router.push("/billing/portal")
-          },
-          prefill: {
-            email: data.email,
-          },
-          theme: {
-            color: "#8B5CF6",
-          },
-        }
-
-        const razorpay = new (window as any).Razorpay(options)
-        razorpay.open()
-        setIsLoading(false)
+      } else {
+        throw new Error("No checkout URL received")
       }
     } catch (error: any) {
       setError(error.message || "Failed to initiate checkout")

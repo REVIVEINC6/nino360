@@ -7,6 +7,10 @@ export function sha256Hex(input: string): string {
   return crypto.createHash("sha256").update(input).digest("hex")
 }
 
+export function hashData(input: string): Promise<string> {
+  return Promise.resolve(sha256Hex(input))
+}
+
 export function chainHash(
   prevHash: string | null,
   payload: {
@@ -31,6 +35,17 @@ export function chainHash(
 export function stableStringify(obj: unknown): string {
   if (!obj || typeof obj !== "object") return JSON.stringify(obj)
   return JSON.stringify(obj, Object.keys(obj as any).sort())
+}
+
+export function verifyHashChain(prevHash: string, expectedPrevHash: string, recordData: string): boolean {
+  // Verify that the previous hash matches what's expected
+  if (prevHash !== expectedPrevHash) {
+    return false
+  }
+
+  // Additional verification could be done here to recompute the hash
+  // from the record data and compare it to the stored hash
+  return true
 }
 
 export async function appendAudit({

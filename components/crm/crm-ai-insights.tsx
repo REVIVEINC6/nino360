@@ -14,37 +14,15 @@ export function CRMAIInsights({ generateInsights }: CRMAIInsightsProps) {
   const [insights, setInsights] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
-  useEffect(() => {
-    // Decide between using the provided generator or falling back to an internal API.
-    const load = async () => {
-      if (generateInsights) {
-        // use a transition for potentially expensive generator calls
-        startTransition(() => {
-          ;(async () => {
-            try {
-              const result = await generateInsights()
-              if (result?.success) setInsights(result.data)
-            } catch (e) {
-              // ignore errors for the placeholder
-            } finally {
-              setLoading(false)
-            }
-          })()
-        })
-      } else {
-        try {
-          const res = await fetch('/api/crm/insights')
-          const result = await res.json()
-          if (result?.success) setInsights(result.data)
-        } catch (e) {
-          // ignore network errors for the placeholder
-        } finally {
-          setLoading(false)
-        }
-      }
-    }
 
-    load()
+  useEffect(() => {
+    startTransition(async () => {
+      const result = await generateInsights()
+      if (result.success) {
+        setInsights(result.data)
+      }
+      setLoading(false)
+    })
   }, [generateInsights])
 
   if (loading || isPending) {

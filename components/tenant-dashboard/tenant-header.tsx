@@ -13,21 +13,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface TenantHeaderProps {
   tenantName: string
   slug: string
-  onDateRangeChange?: (range: { from: string; to: string }) => void
 }
 
-export function TenantHeader({ tenantName, slug, onDateRangeChange }: TenantHeaderProps) {
+export function TenantHeader({ tenantName, slug }: TenantHeaderProps) {
   const [dateRange, setDateRange] = useState("7")
+  const router = useRouter()
 
   const handleDateRangeChange = (value: string) => {
     setDateRange(value)
     const to = new Date().toISOString()
     const from = new Date(Date.now() - Number.parseInt(value) * 24 * 60 * 60 * 1000).toISOString()
-    onDateRangeChange?.({ from, to })
+    router.push(`/tenant/dashboard?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
   }
 
   return (
@@ -51,7 +52,7 @@ export function TenantHeader({ tenantName, slug, onDateRangeChange }: TenantHead
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/t/${slug}/admin`}>
+              <Link href={`/tenant/configuration`}>
                 <Building2 className="mr-2 h-4 w-4" />
                 Tenant Settings
               </Link>
@@ -59,7 +60,7 @@ export function TenantHeader({ tenantName, slug, onDateRangeChange }: TenantHead
           </DropdownMenuContent>
         </DropdownMenu>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight gradient-text">Tenant Dashboard</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight gradient-text">Tenant Dashboard</h1>
           <p className="text-sm text-muted-foreground">Real-time insights and analytics</p>
         </div>
       </div>

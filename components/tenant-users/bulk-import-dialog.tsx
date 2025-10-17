@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Upload } from "lucide-react"
-import { bulkImportCsv } from "@/app/(app)/tenant/users/actions"
+import { bulkImportCsv } from "@/app/(dashboard)/tenant/users/actions"
 import { toast } from "sonner"
 
 interface BulkImportDialogProps {

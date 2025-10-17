@@ -63,6 +63,19 @@ export function DirectoryToolbar({ onSearch, onFilterRole, onFilterStatus, onFil
             </SelectContent>
           </Select>
 
+          <Select onValueChange={onFilterRegion}>
+            <SelectTrigger className="w-[140px] border-white/10 bg-white/5 backdrop-blur-xl">
+              <SelectValue placeholder="Region" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Regions</SelectItem>
+              <SelectItem value="us-east">US East</SelectItem>
+              <SelectItem value="us-west">US West</SelectItem>
+              <SelectItem value="eu-west">EU West</SelectItem>
+              <SelectItem value="ap-south">AP South</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Button
             onClick={() => setCreateDialogOpen(true)}
             className="bg-gradient-to-r from-[#4F46E5] to-[#8B5CF6] hover:from-[#4338CA] hover:to-[#7C3AED]"

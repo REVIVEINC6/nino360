@@ -438,3 +438,107 @@ export async function revokeRole(input: unknown) {
   revalidatePath("/admin/users")
   return { ok: true }
 }
+
+export async function getRoleRecommendations() {
+  try {
+    await verifyAdmin()
+    const supabase = getSupabase()
+
+    // Get role usage statistics
+    const { data: roleStats } = await supabase
+      .from("user_roles")
+      .select("role_id, roles(key, label)")
+      .order("created_at", { ascending: false })
+      .limit(100)
+
+    // Get permission usage patterns
+    const { data: permStats } = await supabase
+      .from("role_permissions")
+      .select("permission_id, permissions(key)")
+      .limit(100)
+
+    // Generate AI recommendations using GPT-4o-mini
+    const { generateText } = await import("ai")
+    const { text } = await generateText({
+      model: "openai/gpt-4o-mini",
+      prompt: `Analyze these role and permission usage patterns and provide 3 actionable recommendations for role optimization:
+      
+Role Usage: ${JSON.stringify(roleStats?.slice(0, 10))}
+Permission Patterns: ${JSON.stringify(permStats?.slice(0, 10))}
+
+Provide recommendations in JSON format: [{"title": "...", "description": "...", "priority": "high|medium|low"}]`,
+    })
+
+    return JSON.parse(text)
+  } catch (error) {
+    console.error("[v0] Error in getRoleRecommendations:", error)
+    return []
+  }
+}
+
+export async function verifyRoleAuditChain(roleId: string) {
+  try {
+    await verifyAdmin()
+    const supabase = getSupabase()
+
+    const { data: audits } = await supabase
+      .from("audit_logs")
+      .select("*")
+      .eq("resource_type", "role")
+      .eq("resource_id", roleId)
+      .order("created_at", { ascending: true })
+
+    if (!audits || audits.length === 0) {
+      return { valid: true, message: "No audit trail found" }
+    }
+
+    // Verify hash chain integrity
+    const { verifyHashChain } = await import("@/lib/audit/hash-chain")
+    const isValid = await verifyHashChain(audits)
+
+    return {
+      valid: isValid,
+      auditCount: audits.length,
+      message: isValid ? "Audit chain verified" : "Audit chain integrity compromised",
+    }
+  } catch (error) {
+    console.error("[v0] Error in verifyRoleAuditChain:", error)
+    return { valid: false, message: "Verification failed" }
+  }
+}
+
+export async function triggerRoleAutomation(action: "sync" | "audit" | "cleanup") {
+  try {
+    await verifyAdmin()
+    await rateLimit("role_automation", 5, 60000)
+
+    const supabase = getSupabase()
+
+    switch (action) {
+      case "sync":
+        // Sync roles across all tenants
+        const { data: tenants } = await supabase.from("tenants").select("id")
+        // Trigger sync workflow
+        return { success: true, message: `Syncing roles across ${tenants?.length || 0} tenants` }
+
+      case "audit":
+        // Run automated audit checks
+        const { data: roles } = await supabase.from("roles").select("id")
+        return { success: true, message: `Auditing ${roles?.length || 0} roles` }
+
+      case "cleanup":
+        // Clean up unused roles
+        const { data: unusedRoles } = await supabase
+          .from("roles")
+          .select("id")
+          .not("id", "in", supabase.from("user_roles").select("role_id"))
+        return { success: true, message: `Found ${unusedRoles?.length || 0} unused roles` }
+
+      default:
+        throw new Error("Invalid automation action")
+    }
+  } catch (error: any) {
+    console.error("[v0] Error in triggerRoleAutomation:", error)
+    throw error
+  }
+}

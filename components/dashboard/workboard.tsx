@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
 
 const tasks = [
   { id: 1, title: "Approve timesheet for John Doe", type: "approval", due: "Today", priority: "high" },
@@ -27,6 +29,29 @@ const automations = [
 
 export function Workboard() {
   const [activeTab, setActiveTab] = useState("today")
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleTaskClick = (task: (typeof tasks)[0]) => {
+    if (task.type === "approval") {
+      router.push("/admin/approvals")
+    } else {
+      toast({
+        title: "Task Details",
+        description: task.title,
+      })
+    }
+  }
+
+  const handleTicketClick = (ticket: (typeof tickets)[0]) => {
+    const routes = {
+      HRMS: "/hrms/compliance",
+      Talent: "/talent/interviews",
+      Finance: "/finance/dashboard",
+      CRM: "/crm/opportunities",
+    }
+    router.push(routes[ticket.module as keyof typeof routes] || "/dashboard")
+  }
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
@@ -48,7 +73,8 @@ export function Workboard() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-background/50 hover:bg-background/80 transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-lg bg-background/50 hover:bg-background/80 transition-colors cursor-pointer"
+                  onClick={() => handleTaskClick(task)}
                 >
                   <CheckCircle2 className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div className="flex-1 space-y-1">
@@ -78,7 +104,8 @@ export function Workboard() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="flex items-start gap-3 p-3 rounded-lg bg-background/50"
+              className="flex items-start gap-3 p-3 rounded-lg bg-background/50 hover:bg-background/80 transition-colors cursor-pointer"
+              onClick={() => handleTicketClick(ticket)}
             >
               <AlertTriangle
                 className={cn(

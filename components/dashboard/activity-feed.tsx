@@ -5,6 +5,7 @@ import { Briefcase, Users, DollarSign, FileText, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useRouter } from "next/navigation"
 
 const activities = [
   {
@@ -48,6 +49,18 @@ const activities = [
 ]
 
 export function ActivityFeed() {
+  const router = useRouter()
+
+  const handleViewActivity = (activity: (typeof activities)[0]) => {
+    const routes = {
+      crm: "/crm/opportunities",
+      hrms: "/hrms/compliance",
+      finance: "/finance/accounts-receivable",
+      talent: "/talent/applicants",
+    }
+    router.push(routes[activity.type as keyof typeof routes])
+  }
+
   return (
     <Card className="glass-panel border-primary/20">
       <CardHeader>
@@ -84,7 +97,7 @@ export function ActivityFeed() {
                 </span>
               </div>
             </div>
-            <Button size="sm" variant="ghost">
+            <Button size="sm" variant="ghost" onClick={() => handleViewActivity(activity)}>
               View
             </Button>
           </motion.div>

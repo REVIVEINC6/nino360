@@ -22,11 +22,8 @@ export async function getUserPermissions(): Promise<UserPermissions> {
     return { permissions: [], roles: [] }
   }
 
-  // Get tenant_id from JWT claims
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  const tenantId = session?.user?.user_metadata?.tenant_id
+  // Get tenant_id from user metadata (now from authenticated user object)
+  const tenantId = user.user_metadata?.tenant_id
 
   if (!tenantId) {
     return { permissions: [], roles: [] }
@@ -108,4 +105,12 @@ export async function requireRole(role: Role): Promise<void> {
   if (!allowed) {
     throw new Error(`Role required: ${role}`)
   }
+}
+
+/**
+ * Guard function to ensure user has admin role
+ * Throws error if user is not an admin
+ */
+export async function guardAdmin(): Promise<void> {
+  await requireRole("admin")
 }

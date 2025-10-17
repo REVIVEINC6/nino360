@@ -83,10 +83,10 @@ export function CTASection() {
   return (
     <section
       id="cta-section"
-      className="relative py-32 bg-gradient-to-b from-black via-[#0a0015] to-black overflow-hidden"
+      className="relative py-32 bg-gradient-to-b from-white via-slate-50 to-white overflow-hidden"
     >
       <motion.div
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-20"
         style={{
           background: "radial-gradient(circle at 50% 50%, #4F46E5, #8B5CF6, #A855F7, transparent)",
           rotateX,
@@ -102,37 +102,37 @@ export function CTASection() {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto text-center space-y-8"
         >
-          <h2 className="text-5xl md:text-6xl font-bold font-heading">
+          <h2 className="text-5xl md:text-6xl font-bold font-heading text-slate-900">
             Shape the Future with{" "}
             <span className="bg-gradient-to-r from-[#4F46E5] via-[#8B5CF6] to-[#A855F7] bg-clip-text text-transparent">
               Nino360
             </span>
           </h2>
 
-          <p className="text-xl text-white/70 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
             Launch with GenAI, Intelligent AI, ML, Automation, and Blockchain trust.
           </p>
 
-          <div className="max-w-2xl mx-auto p-8 rounded-2xl glass-card">
+          <div className="max-w-2xl mx-auto p-8 rounded-2xl backdrop-blur-xl bg-white/70 border border-slate-200/50 shadow-lg">
             <div className="space-y-4">
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your Name"
-                className="bg-black/50 border-white/20 text-white placeholder:text-white/40"
+                className="bg-white/50 border-slate-300 text-slate-900 placeholder:text-slate-400"
               />
               <Input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 placeholder="Work Email"
-                className="bg-black/50 border-white/20 text-white placeholder:text-white/40"
+                className="bg-white/50 border-slate-300 text-slate-900 placeholder:text-slate-400"
               />
               <Input
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="Company Name"
-                className="bg-black/50 border-white/20 text-white placeholder:text-white/40"
+                className="bg-white/50 border-slate-300 text-slate-900 placeholder:text-slate-400"
               />
             </div>
 
@@ -141,7 +141,7 @@ export function CTASection() {
                 size="lg"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="flex-1 bg-gradient-to-r from-[#4F46E5] via-[#8B5CF6] to-[#A855F7] hover:opacity-90 transition-opacity text-lg gap-2"
+                className="flex-1 bg-gradient-to-r from-[#4F46E5] via-[#8B5CF6] to-[#A855F7] hover:opacity-90 transition-opacity text-lg gap-2 text-white"
               >
                 {isSubmitting ? "Submitting..." : "Request a Demo"}
                 <ArrowRight className="h-5 w-5" />
@@ -149,14 +149,14 @@ export function CTASection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="flex-1 border-[#8B5CF6]/50 text-white hover:bg-white/10 text-lg bg-transparent"
+                className="flex-1 border-[#8B5CF6]/50 text-slate-900 hover:bg-slate-100 text-lg bg-white/50"
               >
                 Join Partner Network
               </Button>
             </div>
           </div>
 
-          <p className="text-sm text-white/40">Join 1200+ enterprises transforming with AI-powered intelligence</p>
+          <p className="text-sm text-slate-500">Join 1200+ enterprises transforming with AI-powered intelligence</p>
         </motion.div>
       </div>
     </section>

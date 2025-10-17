@@ -65,7 +65,7 @@ export default function BillingPortalPage() {
       title: "Opening billing portal",
       description: "Redirecting to payment provider...",
     })
-    // In production, this would redirect to Stripe/Razorpay portal
+    // In production, this would redirect to Stripe portal
   }
 
   if (isLoading) {

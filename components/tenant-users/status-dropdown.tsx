@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { setStatus } from "@/app/(app)/tenant/users/actions"
+import { setStatus } from "@/app/(dashboard)/tenant/users/actions"
 import { toast } from "sonner"
 
 interface StatusDropdownProps {

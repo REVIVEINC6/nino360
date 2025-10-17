@@ -6,16 +6,33 @@ import { createClient } from "@/lib/supabase/server"
 
 // Validation schemas
 const candidateSchema = z.object({
+  candidate_id: z.string().optional(), // OOC-1042 format
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
   email: z.string().email("Invalid email"),
   phone: z.string().optional(),
+  mobile: z.string().optional(),
+  candidate_status: z.string().default("Available"), // Available, Placed, etc.
+  owner: z.string().optional(),
+  job_title: z.string().optional(),
+  work_authorization: z.string().optional(), // H1-B, Green Card, Citizen, etc.
+  years_of_experience: z.union([z.string(), z.number()]).optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  address: z.string().optional(),
+  zip_code: z.string().optional(),
+  skills: z.union([z.array(z.string()), z.string()]).optional(), // Can be array or comma-separated string
+  linkedin_url: z.string().url().optional().or(z.literal("")),
+  willing_to_relocate: z.union([z.boolean(), z.string()]).optional(),
+  inactive_start_date: z.string().optional(),
+  inactive_end_date: z.string().optional(),
+  expected_rate: z.union([z.string(), z.number()]).optional(),
+
+  // Legacy fields for backward compatibility
   location: z.string().optional(),
   current_title: z.string().optional(),
   current_company: z.string().optional(),
-  linkedin_url: z.string().url().optional().or(z.literal("")),
   resume_url: z.string().optional(),
-  skills: z.array(z.string()).optional(),
   experience_years: z.number().optional(),
   education: z.string().optional(),
   source: z.string().optional(),
@@ -33,9 +50,14 @@ export async function listCandidates(params?: {
   page?: number
   limit?: number
   status?: string
+  candidate_status?: string
   source?: string
   search?: string
   skills?: string[]
+  work_authorization?: string
+  state?: string
+  experience_min?: number
+  experience_max?: number
   sortBy?: string
   sortOrder?: "asc" | "desc"
 }) {
@@ -45,9 +67,14 @@ export async function listCandidates(params?: {
       page = 1,
       limit = 20,
       status,
+      candidate_status,
       source,
       search,
       skills,
+      work_authorization,
+      state,
+      experience_min,
+      experience_max,
       sortBy = "created_at",
       sortOrder = "desc",
     } = params || {}
@@ -67,14 +94,26 @@ export async function listCandidates(params?: {
       .eq("tenant_id", profile.tenant_id)
 
     if (status) query = query.eq("status", status)
+    if (candidate_status) query = query.eq("candidate_status", candidate_status)
     if (source) query = query.eq("source", source)
+    if (work_authorization) query = query.eq("work_authorization", work_authorization)
+    if (state) query = query.eq("state", state)
+
     if (search) {
       query = query.or(
-        `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,current_title.ilike.%${search}%`,
+        `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,job_title.ilike.%${search}%,current_title.ilike.%${search}%,candidate_id.ilike.%${search}%`,
       )
     }
+
     if (skills?.length) {
       query = query.contains("skills", skills)
+    }
+
+    if (experience_min !== undefined) {
+      query = query.gte("years_of_experience", experience_min)
+    }
+    if (experience_max !== undefined) {
+      query = query.lte("years_of_experience", experience_max)
     }
 
     query = query.order(sortBy, { ascending: sortOrder === "asc" })
@@ -333,7 +372,7 @@ export async function searchCandidates(
       .select("*")
       .eq("tenant_id", profile.tenant_id)
       .or(
-        `first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,current_title.ilike.%${query}%,skills.cs.{${query}}`,
+        `first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,job_title.ilike.%${query}%,skills.cs.{${query}}`,
       )
 
     if (filters?.status?.length) {
@@ -359,6 +398,138 @@ export async function searchCandidates(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to search candidates",
+    }
+  }
+}
+
+// Import candidates from CSV
+export async function importCandidatesFromCsv(csvUrl: string) {
+  try {
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single()
+    if (!profile?.tenant_id) throw new Error("Tenant not found")
+
+    // Fetch CSV data
+    const response = await fetch(csvUrl)
+    const csvText = await response.text()
+
+    // Parse CSV (simple implementation - in production use a proper CSV parser)
+    const lines = csvText.split("\n")
+    const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""))
+
+    const candidates = []
+    const errors = []
+
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue
+
+      const values = lines[i].split(",").map((v) => v.trim().replace(/"/g, ""))
+      const candidate: any = {}
+
+      headers.forEach((header, index) => {
+        const value = values[index]
+
+        // Map CSV headers to database fields
+        switch (header) {
+          case "Candidate ID":
+            candidate.candidate_id = value
+            break
+          case "First Name":
+            candidate.first_name = value
+            break
+          case "Last Name":
+            candidate.last_name = value
+            break
+          case "Email":
+            candidate.email = value
+            break
+          case "Phone":
+            candidate.phone = value
+            break
+          case "Mobile":
+            candidate.mobile = value
+            break
+          case "Candidate Status":
+            candidate.candidate_status = value
+            break
+          case "Owner":
+            candidate.owner = value
+            break
+          case "Job Title":
+            candidate.job_title = value
+            candidate.current_title = value // Also set legacy field
+            break
+          case "Work Authorization":
+            candidate.work_authorization = value
+            break
+          case "Years of Experience":
+            candidate.years_of_experience = value ? Number.parseInt(value) : null
+            candidate.experience_years = value ? Number.parseInt(value) : null
+            break
+          case "City":
+            candidate.city = value
+            break
+          case "State":
+            candidate.state = value
+            break
+          case "Address":
+            candidate.address = value
+            break
+          case "Zip Code":
+            candidate.zip_code = value
+            break
+          case "Skills":
+            // Parse comma-separated skills
+            candidate.skills = value ? value.split(",").map((s) => s.trim()) : []
+            break
+          case "LinkedIn Url":
+            candidate.linkedin_url = value
+            break
+          case "Willing to relocate":
+            candidate.willing_to_relocate = value?.toLowerCase() === "yes"
+            break
+          case "Expected Rate":
+            candidate.expected_rate = value
+            break
+        }
+      })
+
+      // Set location from city/state
+      if (candidate.city && candidate.state) {
+        candidate.location = `${candidate.city}, ${candidate.state}`
+      }
+
+      // Add tenant and user info
+      candidate.tenant_id = profile.tenant_id
+      candidate.created_by = user.id
+      candidate.status = "New"
+
+      candidates.push(candidate)
+    }
+
+    // Bulk insert
+    const { data, error } = await supabase.from("candidates").insert(candidates).select()
+
+    if (error) throw error
+
+    revalidatePath("/talent/candidates")
+    return {
+      success: true,
+      data,
+      imported: data?.length || 0,
+      errors: errors.length > 0 ? errors : undefined,
+    }
+  } catch (error) {
+    console.error("[v0] Error importing candidates:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to import candidates",
     }
   }
 }

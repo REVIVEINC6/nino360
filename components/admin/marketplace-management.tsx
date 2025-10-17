@@ -1,15 +1,41 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Plus, Package, DollarSign } from "lucide-react"
+import { Search } from "lucide-react"
+import { MarketplaceTable } from "./marketplace-table"
+import { listAddons } from "@/app/(dashboard)/admin/marketplace/actions"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function MarketplaceManagement() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [addons, setAddons] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await listAddons()
+        setAddons(data)
+      } catch (error) {
+        console.error("[v0] Failed to load marketplace data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  if (loading) {
+    return <Skeleton className="h-[600px] w-full" />
+  }
+
+  const filteredAddons = addons.filter(
+    (addon: any) =>
+      addon.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      addon.sku.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
 
   return (
     <div className="space-y-6">
@@ -29,50 +55,9 @@ export function MarketplaceManagement() {
                 className="pl-9"
               />
             </div>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add SKU
-            </Button>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>SKU</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-mono text-sm">SKU-001</TableCell>
-                <TableCell>Advanced Analytics</TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    <Package className="h-3 w-3 mr-1" />
-                    Add-on
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <DollarSign className="h-3 w-3" />
-                    49/mo
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="default">Active</Badge>
-                </TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm">
-                    Edit
-                  </Button>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+          <MarketplaceTable addons={filteredAddons} />
         </CardContent>
       </Card>
     </div>

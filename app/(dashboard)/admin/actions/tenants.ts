@@ -5,6 +5,7 @@ import { cookies } from "next/headers"
 import { createServerClient } from "@supabase/ssr"
 import { revalidatePath } from "next/cache"
 import { checkRateLimit, getRateLimitKey, RATE_LIMITS } from "@/lib/rate-limit"
+import { generateText } from "ai"
 
 function getSupabase() {
   const cookieStore = cookies()
@@ -349,4 +350,174 @@ export async function archiveTenant(tenantId: string) {
 
   revalidatePath("/admin/tenants")
   return data
+}
+
+export async function generateTenantInsights(tenantId: string) {
+  await verifyAdmin()
+
+  const supabase = getSupabase()
+
+  // Fetch tenant data and metrics
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("*, plan:tenant_plans(*, plans(*))")
+    .eq("id", tenantId)
+    .single()
+
+  const [users, docs, copilot, audit] = await Promise.all([
+    supabase.from("user_tenants").select("count").eq("tenant_id", tenantId),
+    supabase.from("tenant_docs").select("count").eq("tenant_id", tenantId).maybeSingle(),
+    supabase.from("rag_threads").select("count").eq("tenant_id", tenantId).maybeSingle(),
+    supabase
+      .from("audit_logs")
+      .select("action, created_at")
+      .eq("tenant_id", tenantId)
+      .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      .order("created_at", { ascending: false }),
+  ])
+
+  const metrics = {
+    name: tenant?.name,
+    status: tenant?.status,
+    plan: tenant?.plan?.[0]?.plans?.name,
+    user_count: users.data?.[0]?.count || 0,
+    doc_count: docs.data?.count || 0,
+    copilot_sessions: copilot.data?.count || 0,
+    recent_activity_count: audit.data?.length || 0,
+    created_at: tenant?.created_at,
+  }
+
+  try {
+    const { text } = await generateText({
+      model: "openai/gpt-4o-mini",
+      prompt: `Analyze this tenant's health and provide actionable insights:
+
+Tenant: ${metrics.name}
+Status: ${metrics.status}
+Plan: ${metrics.plan}
+Users: ${metrics.user_count}
+Documents: ${metrics.doc_count}
+Copilot Sessions: ${metrics.copilot_sessions}
+Recent Activity (30d): ${metrics.recent_activity_count}
+Account Age: ${Math.floor((Date.now() - new Date(metrics.created_at).getTime()) / (1000 * 60 * 60 * 24))} days
+
+Provide:
+1. Health Score (0-100)
+2. Churn Risk (Low/Medium/High)
+3. Top 3 Recommendations
+4. Upsell Opportunities
+
+Format as JSON with keys: healthScore, churnRisk, recommendations (array), upsellOpportunities (array)`,
+    })
+
+    return JSON.parse(text)
+  } catch (error) {
+    console.error("[v0] Error generating AI insights:", error)
+    return {
+      healthScore: 50,
+      churnRisk: "Unknown",
+      recommendations: ["Unable to generate insights at this time"],
+      upsellOpportunities: [],
+    }
+  }
+}
+
+export async function verifyTenantAuditChain(tenantId: string) {
+  await verifyAdmin()
+
+  const supabase = getSupabase()
+
+  const { data: logs } = await supabase
+    .from("audit_logs")
+    .select("id, action, created_at, hash, prev_hash")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: true })
+
+  if (!logs || logs.length === 0) {
+    return { verified: true, totalLogs: 0, message: "No audit logs to verify" }
+  }
+
+  let verified = true
+  let brokenAt = -1
+
+  for (let i = 1; i < logs.length; i++) {
+    const current = logs[i]
+    const previous = logs[i - 1]
+
+    if (current.prev_hash !== previous.hash) {
+      verified = false
+      brokenAt = i
+      break
+    }
+  }
+
+  return {
+    verified,
+    totalLogs: logs.length,
+    brokenAt,
+    message: verified ? "Audit chain verified successfully" : `Chain broken at log ${brokenAt}`,
+  }
+}
+
+export async function triggerTenantRPAWorkflow(tenantId: string, workflowType: string) {
+  await verifyAdmin()
+
+  const supabase = getSupabase()
+
+  const workflows: Record<string, any> = {
+    health_check: {
+      name: "Tenant Health Check",
+      steps: ["Check user activity", "Verify billing status", "Review feature usage", "Generate report"],
+    },
+    onboarding: {
+      name: "Automated Onboarding",
+      steps: ["Send welcome email", "Create sample data", "Schedule training", "Assign success manager"],
+    },
+    compliance: {
+      name: "Compliance Audit",
+      steps: ["Check data retention", "Verify access controls", "Review audit logs", "Generate compliance report"],
+    },
+    renewal: {
+      name: "Renewal Preparation",
+      steps: ["Calculate usage", "Prepare invoice", "Send renewal notice", "Schedule review call"],
+    },
+  }
+
+  const workflow = workflows[workflowType]
+
+  if (!workflow) {
+    throw new Error("Invalid workflow type")
+  }
+
+  // Log the RPA workflow trigger
+  await supabase.from("audit_logs").insert({
+    tenant_id: tenantId,
+    user_id: (await supabase.auth.getUser()).data.user?.id,
+    action: `rpa_workflow_triggered`,
+    resource_type: "tenant",
+    resource_id: tenantId,
+    details: { workflow: workflowType, name: workflow.name, steps: workflow.steps },
+  })
+
+  return {
+    success: true,
+    workflow: workflow.name,
+    steps: workflow.steps,
+    message: `${workflow.name} workflow triggered successfully`,
+  }
+}
+
+export async function generateBulkTenantInsights(tenantIds: string[]) {
+  const user = await verifyAdmin()
+
+  // Rate limiting
+  const rateLimitKey = getRateLimitKey(user.id, "bulk_ai_insights")
+  const allowed = await checkRateLimit(rateLimitKey, RATE_LIMITS.BULK_ACTION)
+  if (!allowed) {
+    throw new Error("Rate limit exceeded. Please try again later.")
+  }
+
+  const insights = await Promise.all(tenantIds.map((id) => generateTenantInsights(id)))
+
+  return insights
 }

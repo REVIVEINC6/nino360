@@ -32,6 +32,11 @@ import {
   Filter,
   Archive,
   TrendingUp,
+  Sparkles,
+  Shield,
+  Zap,
+  TrendingDown,
+  AlertTriangle,
 } from "lucide-react"
 import {
   listTenants,
@@ -44,6 +49,9 @@ import {
   exportTenantsCSV,
   listPlans,
   archiveTenant,
+  generateTenantInsights,
+  verifyTenantAuditChain,
+  triggerTenantRPAWorkflow,
 } from "../actions/tenants"
 import { useToast } from "@/hooks/use-toast"
 import { createBrowserClient } from "@supabase/ssr"
@@ -72,6 +80,11 @@ export default function TenantsPage() {
   const [plans, setPlans] = useState<any[]>([])
   const [bulkPlanDialogOpen, setBulkPlanDialogOpen] = useState(false)
   const [bulkPlanId, setBulkPlanId] = useState("")
+  const [aiInsights, setAiInsights] = useState<any>(null)
+  const [loadingInsights, setLoadingInsights] = useState(false)
+  const [auditVerification, setAuditVerification] = useState<any>(null)
+  const [rpaDialogOpen, setRpaDialogOpen] = useState(false)
+  const [selectedWorkflow, setSelectedWorkflow] = useState("")
   const { toast } = useToast()
 
   const [metrics, setMetrics] = useState({
@@ -286,6 +299,49 @@ export default function TenantsPage() {
     }
   }
 
+  const handleLoadInsights = async (tenantId: string) => {
+    setLoadingInsights(true)
+    try {
+      const insights = await generateTenantInsights(tenantId)
+      setAiInsights(insights)
+      toast({ title: "Success", description: "AI insights generated successfully" })
+    } catch (error: any) {
+      console.error("[v0] Error loading insights:", error)
+      toast({ title: "Error", description: error.message, variant: "destructive" })
+    } finally {
+      setLoadingInsights(false)
+    }
+  }
+
+  const handleVerifyAuditChain = async (tenantId: string) => {
+    try {
+      const verification = await verifyTenantAuditChain(tenantId)
+      setAuditVerification(verification)
+      toast({
+        title: verification.verified ? "Verified" : "Warning",
+        description: verification.message,
+        variant: verification.verified ? "default" : "destructive",
+      })
+    } catch (error: any) {
+      console.error("[v0] Error verifying audit chain:", error)
+      toast({ title: "Error", description: error.message, variant: "destructive" })
+    }
+  }
+
+  const handleTriggerRPA = async () => {
+    if (!viewingDetails || !selectedWorkflow) return
+
+    try {
+      const result = await triggerTenantRPAWorkflow(viewingDetails.tenant.id, selectedWorkflow)
+      setRpaDialogOpen(false)
+      setSelectedWorkflow("")
+      toast({ title: "Success", description: result.message })
+    } catch (error: any) {
+      console.error("[v0] Error triggering RPA:", error)
+      toast({ title: "Error", description: error.message, variant: "destructive" })
+    }
+  }
+
   const totalPages = Math.max(1, Math.ceil(total / per))
 
   return (
@@ -460,6 +516,19 @@ export default function TenantsPage() {
               <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="mr-2 h-4 w-4" />
                 Export
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (selected.length > 0) {
+                    toast({ title: "Coming Soon", description: "Bulk AI insights generation" })
+                  }
+                }}
+                disabled={selected.length === 0}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                AI Insights
               </Button>
             </div>
           </div>
@@ -664,11 +733,15 @@ export default function TenantsPage() {
 
           {viewingDetails && (
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="features">Features</TabsTrigger>
                 <TabsTrigger value="stats">Statistics</TabsTrigger>
                 <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+                <TabsTrigger value="ai">
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  AI Insights
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4">
@@ -787,7 +860,36 @@ export default function TenantsPage() {
               </TabsContent>
 
               <TabsContent value="audit" className="space-y-2">
-                <div className="text-sm text-muted-foreground">Recent activity for this tenant</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">Recent activity for this tenant</div>
+                  <Button variant="outline" size="sm" onClick={() => handleVerifyAuditChain(viewingDetails.tenant.id)}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Verify Chain
+                  </Button>
+                </div>
+
+                {auditVerification && (
+                  <div
+                    className={`p-3 rounded-lg border ${
+                      auditVerification.verified
+                        ? "bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800"
+                        : "bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {auditVerification.verified ? (
+                        <Shield className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                      )}
+                      <div>
+                        <div className="font-medium">{auditVerification.message}</div>
+                        <div className="text-sm text-muted-foreground">Total logs: {auditVerification.totalLogs}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {viewingDetails.stats?.recent_audit?.map((log: any, i: number) => (
                     <div key={i} className="flex items-start gap-2 p-2 border rounded text-sm">
@@ -799,8 +901,137 @@ export default function TenantsPage() {
                   )) || <div className="text-center py-8 text-muted-foreground">No audit logs available</div>}
                 </div>
               </TabsContent>
+
+              <TabsContent value="ai" className="space-y-4">
+                {!aiInsights ? (
+                  <div className="text-center py-12 space-y-4">
+                    <Sparkles className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                    <div>
+                      <p className="text-lg font-medium">AI-Powered Tenant Insights</p>
+                      <p className="text-sm text-muted-foreground">
+                        Generate health scores, churn predictions, and recommendations
+                      </p>
+                    </div>
+                    <Button onClick={() => handleLoadInsights(viewingDetails.tenant.id)} disabled={loadingInsights}>
+                      {loadingInsights ? "Generating..." : "Generate Insights"}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium">Health Score</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-3xl font-bold">{aiInsights.healthScore}/100</div>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            {aiInsights.healthScore >= 80
+                              ? "Excellent"
+                              : aiInsights.healthScore >= 60
+                                ? "Good"
+                                : aiInsights.healthScore >= 40
+                                  ? "Fair"
+                                  : "Needs Attention"}
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium">Churn Risk</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center gap-2">
+                            {aiInsights.churnRisk === "High" && <TrendingDown className="h-5 w-5 text-red-500" />}
+                            {aiInsights.churnRisk === "Medium" && <AlertTriangle className="h-5 w-5 text-yellow-500" />}
+                            <div className="text-2xl font-bold">{aiInsights.churnRisk}</div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">Recommendations</Label>
+                      <div className="space-y-2 mt-2">
+                        {aiInsights.recommendations?.map((rec: string, i: number) => (
+                          <div key={i} className="p-3 border rounded-lg bg-muted/50">
+                            <div className="flex items-start gap-2">
+                              <div className="mt-0.5 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">
+                                {i + 1}
+                              </div>
+                              <div className="flex-1 text-sm">{rec}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {aiInsights.upsellOpportunities?.length > 0 && (
+                      <div>
+                        <Label className="text-sm font-medium">Upsell Opportunities</Label>
+                        <div className="space-y-2 mt-2">
+                          {aiInsights.upsellOpportunities.map((opp: string, i: number) => (
+                            <div key={i} className="p-3 border rounded-lg bg-green-50 dark:bg-green-950">
+                              <div className="text-sm">{opp}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleLoadInsights(viewingDetails.tenant.id)}
+                        disabled={loadingInsights}
+                      >
+                        Regenerate
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => setRpaDialogOpen(true)}>
+                        <Zap className="h-4 w-4 mr-2" />
+                        Trigger RPA Workflow
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
             </Tabs>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={rpaDialogOpen} onOpenChange={setRpaDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Trigger RPA Workflow</DialogTitle>
+            <DialogDescription>Automate tenant lifecycle management tasks</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Workflow Type</Label>
+              <Select value={selectedWorkflow} onValueChange={setSelectedWorkflow}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select workflow" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="health_check">Tenant Health Check</SelectItem>
+                  <SelectItem value="onboarding">Automated Onboarding</SelectItem>
+                  <SelectItem value="compliance">Compliance Audit</SelectItem>
+                  <SelectItem value="renewal">Renewal Preparation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRpaDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleTriggerRPA} disabled={!selectedWorkflow}>
+              <Zap className="mr-2 h-4 w-4" />
+              Trigger Workflow
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

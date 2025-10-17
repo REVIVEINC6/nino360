@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Zap, Play, Pause, Settings, Plus, CheckCircle2, Clock, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/components/ui/use-toast"
 
 interface Automation {
   id: string
@@ -73,6 +74,10 @@ export function RpaAutomationHub() {
     },
   ])
 
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null)
+  const { toast } = useToast()
+
   const toggleAutomation = (id: string) => {
     setAutomations((prev) =>
       prev.map((auto) =>
@@ -85,6 +90,17 @@ export function RpaAutomationHub() {
           : auto,
       ),
     )
+
+    const automation = automations.find((a) => a.id === id)
+    toast({
+      title: automation?.status === "running" ? "Automation Paused" : "Automation Started",
+      description: automation?.name,
+    })
+  }
+
+  const handleSettings = (automation: Automation) => {
+    setSelectedAutomation(automation)
+    setSettingsOpen(true)
   }
 
   const getStatusIcon = (status: Automation["status"]) => {
@@ -160,7 +176,7 @@ export function RpaAutomationHub() {
                     >
                       {automation.status === "running" ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleSettings(automation)}>
                       <Settings className="h-4 w-4" />
                     </Button>
                   </div>

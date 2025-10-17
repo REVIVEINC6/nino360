@@ -143,6 +143,14 @@
     @apply bg-background text-foreground;
   }
 
+  /* Added glass-panel utility class for glassmorphism effect */
+  .glass-panel {
+    backdrop-filter: blur(16px);
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 1px rgba(255, 255, 255, 0.2);
+  }
+
   /* Added glass-card utility class for glassmorphism effect */
   .glass-card {
     @apply backdrop-blur-xl bg-white/5 border border-white/10 shadow-[0_0_1px_rgba(255,255,255,0.2)];
@@ -156,8 +164,13 @@
     background-clip: text;
   }
 
-  /* Added neon focus ring utility */
+  /* Fixed neon-focus to use standard CSS instead of @apply with arbitrary values */
   .neon-focus {
-    @apply ring-1 ring-[#8B5CF6] focus:ring-[#D0FF00];
+    outline: none;
+    box-shadow: 0 0 0 1px #8b5cf6;
+  }
+
+  .neon-focus:focus {
+    box-shadow: 0 0 0 2px #d0ff00;
   }
 }

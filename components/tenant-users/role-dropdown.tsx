@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { setRole } from "@/app/(app)/tenant/users/actions"
+import { setRole } from "@/app/(dashboard)/tenant/users/actions"
 import { toast } from "sonner"
 
 interface RoleDropdownProps {

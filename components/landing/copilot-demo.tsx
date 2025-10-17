@@ -31,7 +31,7 @@ export function CopilotDemo() {
   }
 
   return (
-    <section id="copilot" className="relative py-32 bg-gradient-to-b from-black via-[#0a0015] to-black">
+    <section id="copilot" className="relative py-32 bg-gradient-to-b from-white via-slate-50 to-white">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -40,13 +40,13 @@ export function CopilotDemo() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900">
             Nino Copilot —{" "}
             <span className="bg-gradient-to-r from-[#4F46E5] via-[#8B5CF6] to-[#A855F7] bg-clip-text text-transparent">
               Live Generative AI Demo
             </span>
           </h2>
-          <p className="text-xl text-white/60 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
             Watch AI orchestrate complex workflows in natural language
           </p>
         </motion.div>
@@ -59,8 +59,8 @@ export function CopilotDemo() {
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-sm">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <div className="p-6 rounded-2xl backdrop-blur-xl bg-white/70 border border-slate-200/50 shadow-lg">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-900">
                 <Sparkles className="h-5 w-5 text-[#D0FF00]" />
                 AI Prompt Console
               </h3>
@@ -70,13 +70,13 @@ export function CopilotDemo() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Enter your command..."
-                  className="bg-black/50 border-white/20 text-white placeholder:text-white/40"
+                  className="bg-white/50 border-slate-300 text-slate-900 placeholder:text-slate-400"
                 />
 
                 <Button
                   onClick={handleExecute}
                   disabled={isExecuting}
-                  className="w-full bg-gradient-to-r from-[#4F46E5] via-[#8B5CF6] to-[#A855F7] hover:opacity-90 transition-opacity"
+                  className="w-full bg-gradient-to-r from-[#4F46E5] via-[#8B5CF6] to-[#A855F7] hover:opacity-90 transition-opacity text-white"
                 >
                   {isExecuting ? "Executing..." : "Execute AI Command"}
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -84,12 +84,12 @@ export function CopilotDemo() {
               </div>
 
               <div className="mt-6 space-y-2">
-                <p className="text-sm text-white/60">Try these examples:</p>
+                <p className="text-sm text-slate-600">Try these examples:</p>
                 {examplePrompts.slice(1).map((example, i) => (
                   <button
                     key={i}
                     onClick={() => setPrompt(example)}
-                    className="block w-full text-left text-sm text-white/70 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
+                    className="block w-full text-left text-sm text-slate-700 hover:text-slate-900 p-2 rounded-lg hover:bg-slate-100 transition-colors"
                   >
                     {example}
                   </button>
@@ -103,9 +103,9 @@ export function CopilotDemo() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-sm"
+            className="p-6 rounded-2xl backdrop-blur-xl bg-white/70 border border-slate-200/50 shadow-lg"
           >
-            <h3 className="text-lg font-semibold mb-6">AI Orchestration Flow</h3>
+            <h3 className="text-lg font-semibold mb-6 text-slate-900">AI Orchestration Flow</h3>
 
             <div className="space-y-4">
               {orchestrationSteps.map((step, index) => (
@@ -128,8 +128,8 @@ export function CopilotDemo() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium mb-1">{step.name}</h4>
-                    <p className="text-sm text-white/60">{step.description}</p>
+                    <h4 className="font-medium mb-1 text-slate-900">{step.name}</h4>
+                    <p className="text-sm text-slate-600">{step.description}</p>
                   </div>
                 </motion.div>
               ))}
@@ -141,7 +141,7 @@ export function CopilotDemo() {
                 animate={{ opacity: 1 }}
                 className="mt-6 p-4 rounded-lg bg-green-500/10 border border-green-500/30"
               >
-                <p className="text-sm text-green-500">✓ Task completed successfully! Blockchain proof: 0x7a8f...3d2e</p>
+                <p className="text-sm text-green-600">✓ Task completed successfully! Blockchain proof: 0x7a8f...3d2e</p>
               </motion.div>
             )}
           </motion.div>

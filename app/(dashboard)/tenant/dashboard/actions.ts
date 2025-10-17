@@ -282,7 +282,7 @@ Keep it professional, concise, and actionable. Do not include any PII or sensiti
       action: "tenant.dashboard:digest",
       entity: "dashboard",
       entity_id: null,
-      metadata: {
+      details: {
         activityCount: recentActivity?.length || 0,
         tokens: usage.totalTokens,
         model: "gpt-4o-mini",

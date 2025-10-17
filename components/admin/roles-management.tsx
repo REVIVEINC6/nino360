@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, Search, Shield, Edit, Trash2, Copy, MoreVertical } from "lucide-react"
+import { Plus, Search, Shield, Edit, Trash2, Copy, MoreVertical, Sparkles, Lock, Zap } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +51,9 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
   const [createOpen, setCreateOpen] = useState(false)
   const [editRole, setEditRole] = useState<Role | null>(null)
   const [permissionsRole, setPermissionsRole] = useState<Role | null>(null)
+  const [aiRecommendations, setAiRecommendations] = useState<any[]>([])
+  const [showAiPanel, setShowAiPanel] = useState(false)
+  const [verifyingAudit, setVerifyingAudit] = useState(false)
   const { toast } = useToast()
 
   // Filter and sort roles
@@ -132,6 +135,59 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
     }
   }
 
+  const loadAiRecommendations = async () => {
+    try {
+      const { getRoleRecommendations } = await import("@/app/(dashboard)/admin/actions/roles")
+      const recommendations = await getRoleRecommendations()
+      setAiRecommendations(recommendations)
+      setShowAiPanel(true)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to load AI recommendations",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const verifyAuditChain = async (roleId: string) => {
+    setVerifyingAudit(true)
+    try {
+      const { verifyRoleAuditChain } = await import("@/app/(dashboard)/admin/actions/roles")
+      const result = await verifyRoleAuditChain(roleId)
+      toast({
+        title: result.valid ? "Audit Verified" : "Audit Failed",
+        description: result.message,
+        variant: result.valid ? "default" : "destructive",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to verify audit chain",
+        variant: "destructive",
+      })
+    } finally {
+      setVerifyingAudit(false)
+    }
+  }
+
+  const triggerAutomation = async (action: "sync" | "audit" | "cleanup") => {
+    try {
+      const { triggerRoleAutomation } = await import("@/app/(dashboard)/admin/actions/roles")
+      const result = await triggerRoleAutomation(action)
+      toast({
+        title: "Automation Triggered",
+        description: result.message,
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
+  }
+
   const getPermissionCount = (role: Role) => {
     return role.role_permissions?.[0]?.count || 0
   }
@@ -142,6 +198,43 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
 
   return (
     <div className="space-y-6">
+      {showAiPanel && aiRecommendations.length > 0 && (
+        <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-blue-500/5">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-purple-500" />
+                <CardTitle>AI Recommendations</CardTitle>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setShowAiPanel(false)}>
+                ×
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {aiRecommendations.map((rec, idx) => (
+                <div key={idx} className="p-3 rounded-lg bg-background/50 border">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium">{rec.title}</div>
+                      <div className="text-sm text-muted-foreground mt-1">{rec.description}</div>
+                    </div>
+                    <Badge
+                      variant={
+                        rec.priority === "high" ? "destructive" : rec.priority === "medium" ? "default" : "secondary"
+                      }
+                    >
+                      {rec.priority}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Filters and Actions */}
       <Card>
         <CardHeader>
@@ -174,6 +267,25 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
               </Button>
             </div>
             <div className="flex gap-2">
+              <Button variant="outline" onClick={loadAiRecommendations}>
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI Insights
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Zap className="h-4 w-4 mr-2" />
+                    Automation
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => triggerAutomation("sync")}>
+                    Sync Roles Across Tenants
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => triggerAutomation("audit")}>Run Audit Checks</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => triggerAutomation("cleanup")}>Cleanup Unused Roles</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               {selected.length > 0 && (
                 <Button variant="destructive" onClick={handleBulkDelete}>
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -275,6 +387,10 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
                           <DropdownMenuItem onClick={() => setPermissionsRole(role)}>
                             <Shield className="h-4 w-4 mr-2" />
                             Manage Permissions
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => verifyAuditChain(role.id)} disabled={verifyingAudit}>
+                            <Lock className="h-4 w-4 mr-2" />
+                            Verify Audit Chain
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleClone(role)}>
                             <Copy className="h-4 w-4 mr-2" />

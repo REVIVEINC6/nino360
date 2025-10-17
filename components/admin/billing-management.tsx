@@ -1,16 +1,47 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, DollarSign, Download, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { BillingTable } from "./billing-table"
+import { listInvoices } from "@/app/(dashboard)/admin/billing/actions"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function BillingManagement() {
   const [search, setSearch] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
+  const [invoices, setInvoices] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await listInvoices()
+        setInvoices(data)
+      } catch (error) {
+        console.error("[v0] Failed to load billing data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  if (loading) {
+    return <Skeleton className="h-[600px] w-full" />
+  }
+
+  const filteredInvoices = invoices.filter((invoice: any) => {
+    const matchesSearch = invoice.tenant?.name.toLowerCase().includes(search.toLowerCase())
+    const matchesStatus = filterStatus === "all" || invoice.status === filterStatus
+    return matchesSearch && matchesStatus
+  })
+
+  const totalRevenue = invoices.reduce((sum: number, inv: any) => sum + (inv.amount || 0), 0)
+  const pendingCount = invoices.filter((inv: any) => inv.status === "pending").length
 
   return (
     <div className="space-y-6">
@@ -22,8 +53,8 @@ export function BillingManagement() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$0.00</div>
-            <p className="text-xs text-muted-foreground">No billing data yet</p>
+            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">{invoices.length} total invoices</p>
           </CardContent>
         </Card>
         <Card>
@@ -32,8 +63,8 @@ export function BillingManagement() {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">All invoices processed</p>
+            <div className="text-2xl font-bold">{pendingCount}</div>
+            <p className="text-xs text-muted-foreground">Awaiting payment</p>
           </CardContent>
         </Card>
         <Card>
@@ -42,8 +73,8 @@ export function BillingManagement() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">No active subscriptions</p>
+            <div className="text-2xl font-bold">{new Set(invoices.map((i: any) => i.tenant_id)).size}</div>
+            <p className="text-xs text-muted-foreground">With billing history</p>
           </CardContent>
         </Card>
       </div>
@@ -87,30 +118,7 @@ export function BillingManagement() {
       </Card>
 
       {/* Invoices Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Invoice #</TableHead>
-                <TableHead>Tenant</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  <DollarSign className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No invoices found. Billing data will appear here.</p>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <BillingTable invoices={filteredInvoices} />
     </div>
   )
 }
