@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, UserPlus, UserMinus, Calendar, Clock, FileText, AlertTriangle, Ticket } from "lucide-react"
 import { getHRMSDashboardKPIs } from "./actions"
@@ -24,21 +22,22 @@ export default async function HRMSDashboardPage() {
           <AlertTitle>Failed to Load Dashboard</AlertTitle>
           <AlertDescription className="mt-2 space-y-2">
             <p>{result.error}</p>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard">Go to Main Dashboard</Link>
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-                Retry
-              </Button>
-            </div>
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/dashboard">Go to Main Dashboard</Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/hrms/dashboard">Retry</Link>
+                </Button>
+              </div>
           </AlertDescription>
         </Alert>
       </div>
     )
   }
 
-  const { stats, recentJoiners, departmentDistribution } = result.data
+  const data = result.data ?? { stats: { totalEmployees: 0, joinersThisMonth: 0, leaversThisMonth: 0, onLeaveToday: 0, pendingTimesheets: 0, expiringDocs: 0, openTickets: 0, avgAttendance: 0 }, recentJoiners: [], departmentDistribution: [] }
+  const { stats, recentJoiners, departmentDistribution } = data
 
   return (
     <div className="space-y-6">
@@ -144,7 +143,7 @@ export default async function HRMSDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentJoiners.map((emp) => (
+              {recentJoiners.map((emp: any) => (
                 <div key={emp.id} className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">
@@ -168,7 +167,7 @@ export default async function HRMSDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {departmentDistribution.map((dept) => (
+              {departmentDistribution.map((dept: any) => (
                 <div key={dept.dept} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium">{dept.dept}</p>
