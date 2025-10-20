@@ -11,6 +11,8 @@ import { AiPrivacyCard } from "@/components/profile/ai-privacy-card"
 import { ActivityTable } from "@/components/profile/activity-table"
 import { DangerZone } from "@/components/profile/danger-zone"
 
+export const dynamic = "force-dynamic"
+
 export default async function ProfilePage() {
   const data = await getProfile()
 

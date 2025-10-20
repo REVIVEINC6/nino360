@@ -1,18 +1,62 @@
 import { Suspense } from "react"
-import { AdminDashboardContent } from "@/components/admin/admin-dashboard-content"
+import { AdminDashboardStats } from "@/components/admin/admin-dashboard-stats"
+import { AdminDashboardCharts } from "@/components/admin/admin-dashboard-charts"
+import { AdminDashboardActivity } from "@/components/admin/admin-dashboard-activity"
+import { AdminDashboardAI } from "@/components/admin/admin-dashboard-ai"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card } from "@/components/ui/card"
 
+export const dynamic = "force-dynamic"
+
+console.log("[v0] AdminDashboardStats:", AdminDashboardStats)
+console.log("[v0] AdminDashboardCharts:", AdminDashboardCharts)
+console.log("[v0] AdminDashboardActivity:", AdminDashboardActivity)
+console.log("[v0] AdminDashboardAI:", AdminDashboardAI)
+
 export default function AdminDashboardPage() {
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p className="text-muted-foreground">System-wide metrics, AI insights, and operational controls</p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 space-y-6">
+      <div className="glass-card p-6 rounded-xl border border-white/20 shadow-xl backdrop-blur-md bg-white/70">
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          Admin Dashboard
+        </h1>
+        <p className="text-muted-foreground mt-1">System-wide metrics, AI insights, and operational controls</p>
       </div>
 
       <Suspense fallback={<DashboardSkeleton />}>
-        <AdminDashboardContent />
+        <AdminDashboardStats />
+      </Suspense>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Suspense
+          fallback={
+            <Card className="p-6">
+              <Skeleton className="h-[350px] w-full" />
+            </Card>
+          }
+        >
+          <AdminDashboardCharts />
+        </Suspense>
+
+        <Suspense
+          fallback={
+            <Card className="p-6">
+              <Skeleton className="h-[350px] w-full" />
+            </Card>
+          }
+        >
+          <AdminDashboardAI />
+        </Suspense>
+      </div>
+
+      <Suspense
+        fallback={
+          <Card className="p-6">
+            <Skeleton className="h-[400px] w-full" />
+          </Card>
+        }
+      >
+        <AdminDashboardActivity />
       </Suspense>
     </div>
   )
@@ -25,13 +69,6 @@ function DashboardSkeleton() {
         {[...Array(4)].map((_, i) => (
           <Card key={i} className="p-6">
             <Skeleton className="h-20 w-full" />
-          </Card>
-        ))}
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {[...Array(2)].map((_, i) => (
-          <Card key={i} className="p-6">
-            <Skeleton className="h-[350px] w-full" />
           </Card>
         ))}
       </div>

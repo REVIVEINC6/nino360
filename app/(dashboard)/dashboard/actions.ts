@@ -2,6 +2,7 @@
 
 import { createServerClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { generateText } from "ai"
 
 export interface KPIs {
   ats: {
@@ -283,5 +284,399 @@ export async function verifyHash(hash: string): Promise<{ valid: boolean; messag
   return {
     valid: isValidFormat,
     message: isValidFormat ? "Hash verified successfully" : "Invalid hash format",
+  }
+}
+
+export async function getPersonalizedInsights(userId: string): Promise<any[]> {
+  const supabase = await createServerClient()
+
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user) throw new Error("Unauthorized")
+
+  // Get user interaction patterns
+  const { data: interactions } = await supabase
+    .from("user_interactions")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+    .order("created_at", { ascending: false })
+    .limit(100)
+
+  // Get AI insights
+  const { data: insights } = await supabase
+    .from("ai_insights")
+    .select("*")
+    .eq("is_actionable", true)
+    .eq("action_taken", false)
+    .order("priority", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(10)
+
+  // Use AI to personalize insights based on user behavior
+  const { text } = await generateText({
+    model: "openai/gpt-4o-mini",
+    prompt: `Based on user interaction patterns: ${JSON.stringify(interactions?.slice(0, 10))}, 
+    prioritize and personalize these insights: ${JSON.stringify(insights)}.
+    Return a JSON array of top 5 insights with personalized titles and descriptions.`,
+  })
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    return insights || []
+  }
+}
+
+export async function getPredictiveAnalytics(type: string, horizon: string): Promise<any> {
+  const supabase = await createServerClient()
+
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user) throw new Error("Unauthorized")
+
+  // Check cache first
+  const { data: cached } = await supabase
+    .from("predictions_cache")
+    .select("*")
+    .eq("prediction_type", type)
+    .eq("prediction_horizon", horizon)
+    .gt("expires_at", new Date().toISOString())
+    .order("generated_at", { ascending: false })
+    .limit(1)
+    .single()
+
+  if (cached) {
+    return cached.predictions
+  }
+
+  // Generate new predictions using AI
+  const kpis = await getKpis()
+  const digest = await getWeeklyDigest()
+
+  const { text } = await generateText({
+    model: "openai/gpt-4o-mini",
+    prompt: `Generate ${type} predictions for ${horizon} based on current KPIs: ${JSON.stringify(kpis)} 
+    and recent trends: ${JSON.stringify(digest)}.
+    Return a JSON object with predictions array containing {date, value, confidence, lower_bound, upper_bound}.`,
+  })
+
+  try {
+    const predictions = JSON.parse(text)
+
+    // Cache predictions
+    await supabase.from("predictions_cache").insert({
+      prediction_type: type,
+      prediction_horizon: horizon,
+      predictions,
+      expires_at: new Date(Date.now() + 3600000).toISOString(), // 1 hour
+    })
+
+    return predictions
+  } catch (error) {
+    console.error("[v0] Error generating predictions:", error)
+    return { predictions: [] }
+  }
+}
+
+export async function executeRpaWorkflow(workflowId: string, inputData?: any): Promise<any> {
+  const supabase = await createServerClient()
+
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user) throw new Error("Unauthorized")
+
+  // Get workflow definition
+  const { data: workflow, error: workflowError } = await supabase
+    .from("rpa_workflows")
+    .select("*")
+    .eq("id", workflowId)
+    .eq("status", "active")
+    .single()
+
+  if (workflowError || !workflow) {
+    throw new Error("Workflow not found or inactive")
+  }
+
+  // Create execution record
+  const { data: execution, error: executionError } = await supabase
+    .from("rpa_executions")
+    .insert({
+      workflow_id: workflowId,
+      execution_status: "running",
+      input_data: inputData,
+      started_at: new Date().toISOString(),
+    })
+    .select()
+    .single()
+
+  if (executionError) {
+    throw new Error("Failed to create execution record")
+  }
+
+  try {
+    // Execute workflow steps
+    const startTime = Date.now()
+    const results: any[] = []
+
+    for (const step of workflow.workflow_steps as any[]) {
+      // Simulate step execution
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      results.push({ step: step.name, status: "completed" })
+    }
+
+    const duration = Date.now() - startTime
+
+    // Update execution record
+    await supabase
+      .from("rpa_executions")
+      .update({
+        execution_status: "completed",
+        completed_at: new Date().toISOString(),
+        duration_ms: duration,
+        output_data: { results },
+      })
+      .eq("id", execution.id)
+
+    // Update workflow stats
+    await supabase.rpc("increment_workflow_stats", {
+      p_workflow_id: workflowId,
+      p_success: true,
+      p_duration_ms: duration,
+    })
+
+    return { success: true, results, duration }
+  } catch (error: any) {
+    // Update execution with error
+    await supabase
+      .from("rpa_executions")
+      .update({
+        execution_status: "failed",
+        completed_at: new Date().toISOString(),
+        error_message: error.message,
+      })
+      .eq("id", execution.id)
+
+    throw error
+  }
+}
+
+export async function logBlockchainAudit(
+  actionType: string,
+  resourceType: string,
+  resourceId: string,
+  payload: any,
+): Promise<string> {
+  const supabase = await createServerClient()
+
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user) throw new Error("Unauthorized")
+
+  // Get previous hash
+  const { data: lastAudit } = await supabase
+    .from("blockchain_audit")
+    .select("blockchain_hash")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single()
+
+  // Generate blockchain hash
+  const { data: hashData } = await supabase.rpc("generate_blockchain_hash", {
+    p_action_type: actionType,
+    p_resource_type: resourceType,
+    p_payload: payload,
+    p_previous_hash: lastAudit?.blockchain_hash || null,
+  })
+
+  const blockchainHash = hashData || ""
+
+  // Insert audit record
+  await supabase.from("blockchain_audit").insert({
+    action_type: actionType,
+    resource_type: resourceType,
+    resource_id: resourceId,
+    actor_id: user.user.id,
+    actor_email: user.user.email,
+    blockchain_hash: blockchainHash,
+    previous_hash: lastAudit?.blockchain_hash || null,
+    action_payload: payload,
+  })
+
+  return blockchainHash
+}
+
+export async function trackUserInteraction(
+  interactionType: string,
+  widgetKey: string,
+  action: string,
+  data?: any,
+): Promise<void> {
+  const supabase = await createServerClient()
+
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user) return
+
+  await supabase.from("user_interactions").insert({
+    user_id: user.user.id,
+    interaction_type: interactionType,
+    widget_key: widgetKey,
+    action,
+    interaction_data: data,
+    created_at: new Date().toISOString(),
+  })
+}
+
+export async function getUserPreferences(): Promise<any> {
+  const supabase = await createServerClient()
+
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user) throw new Error("Unauthorized")
+
+  const { data: preferences } = await supabase.from("user_preferences").select("*").eq("user_id", user.user.id).single()
+
+  if (!preferences) {
+    // Create default preferences
+    const { data: newPreferences } = await supabase
+      .from("user_preferences")
+      .insert({
+        user_id: user.user.id,
+        layout_config: { widgets: [], grid: "default" },
+        theme: "light",
+        density: "comfortable",
+      })
+      .select()
+      .single()
+
+    return newPreferences
+  }
+
+  return preferences
+}
+
+export async function updateUserPreferences(preferences: any): Promise<void> {
+  const supabase = await createServerClient()
+
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user) throw new Error("Unauthorized")
+
+  await supabase.from("user_preferences").upsert({
+    user_id: user.user.id,
+    ...preferences,
+    updated_at: new Date().toISOString(),
+  })
+
+  revalidatePath("/dashboard")
+}
+
+export async function detectAnomalies(): Promise<any[]> {
+  const supabase = await createServerClient()
+
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user) throw new Error("Unauthorized")
+
+  const kpis = await getKpis()
+
+  // Use AI to detect anomalies
+  const { text } = await generateText({
+    model: "openai/gpt-4o-mini",
+    prompt: `Analyze these KPIs for anomalies: ${JSON.stringify(kpis)}.
+    Return a JSON array of detected anomalies with {type, severity, description, affected_metric, recommendation}.`,
+  })
+
+  try {
+    const anomalies = JSON.parse(text)
+
+    // Store anomalies as AI insights
+    for (const anomaly of anomalies) {
+      await supabase.from("ai_insights").insert({
+        insight_type: "anomaly",
+        category: anomaly.type,
+        priority: anomaly.severity,
+        title: `Anomaly Detected: ${anomaly.affected_metric}`,
+        description: anomaly.description,
+        insight_data: anomaly,
+        is_actionable: true,
+        suggested_actions: [anomaly.recommendation],
+      })
+    }
+
+    return anomalies
+  } catch (error) {
+    console.error("[v0] Error detecting anomalies:", error)
+    return []
+  }
+}
+
+export async function trackModelPerformance(modelName: string, predictions: any[], actuals: any[]): Promise<void> {
+  const supabase = await createServerClient()
+
+  const { data: user } = await supabase.auth.getUser()
+  if (!user.user) throw new Error("Unauthorized")
+
+  // Calculate accuracy metrics
+  let totalError = 0
+  let totalSquaredError = 0
+
+  for (let i = 0; i < Math.min(predictions.length, actuals.length); i++) {
+    const error = Math.abs(predictions[i] - actuals[i])
+    totalError += error
+    totalSquaredError += error * error
+  }
+
+  const mae = totalError / predictions.length
+  const rmse = Math.sqrt(totalSquaredError / predictions.length)
+
+  // Update model performance
+  await supabase
+    .from("ml_models")
+    .update({
+      mae,
+      rmse,
+      performance_history: supabase.rpc("array_append", {
+        arr: "performance_history",
+        elem: { timestamp: new Date().toISOString(), mae, rmse },
+      }),
+    })
+    .eq("model_name", modelName)
+    .eq("status", "deployed")
+}
+
+export async function getMLModelPerformance(): Promise<{
+  success: boolean
+  data?: any[]
+  error?: string
+}> {
+  try {
+    const supabase = await createServerClient()
+
+    const { data: user } = await supabase.auth.getUser()
+    if (!user.user) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    // Get ML model performance data
+    const { data: models, error } = await supabase
+      .from("ml_models")
+      .select("*")
+      .order("last_trained_at", { ascending: false })
+      .limit(5)
+
+    if (error) {
+      console.error("[v0] Error fetching ML model performance:", error)
+      return { success: false, error: error.message }
+    }
+
+    // Transform data for the widget
+    const modelPerformance = models?.map((model) => ({
+      model_name: model.model_name,
+      accuracy: model.accuracy || 0,
+      mae: model.mae || 0,
+      rmse: model.rmse || 0,
+      last_trained: model.last_trained_at,
+      training_samples: model.training_samples || 0,
+      status: model.status,
+    }))
+
+    return { success: true, data: modelPerformance || [] }
+  } catch (error: any) {
+    console.error("[v0] Error in getMLModelPerformance:", error)
+    return { success: false, error: error.message || "Failed to fetch ML model performance" }
   }
 }

@@ -1,14 +1,16 @@
-import { EngagementCenter } from "@/components/crm/engagement-center"
+import { EngagementHeader } from "@/components/crm-engagement/engagement-header"
+import { EngagementContent } from "@/components/crm-engagement/engagement-content"
+import { EngagementStats } from "@/components/crm-engagement/engagement-stats"
+import { getEngagementAnalytics } from "@/app/(dashboard)/crm/actions/engagement"
 
 export default async function EngagementPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Customer Engagement</h1>
-        <p className="text-muted-foreground">Sequences, templates, and bulk communications</p>
-      </div>
+  const analytics = await getEngagementAnalytics()
 
-      <EngagementCenter />
+  return (
+    <div className="min-h-screen ai-gradient-bg p-6 space-y-6">
+      <EngagementHeader />
+      <EngagementStats analytics={analytics} />
+      <EngagementContent />
     </div>
   )
 }

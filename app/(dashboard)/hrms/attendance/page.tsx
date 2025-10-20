@@ -3,10 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Download, Upload } from "lucide-react"
 import { getAttendance } from "./actions"
 
+export const dynamic = "force-dynamic"
+
 export default async function AttendancePage() {
   const result = await getAttendance({
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date().toISOString().split("T")[0],
+    from: new Date().toISOString().split("T")[0],
+    to: new Date().toISOString().split("T")[0],
   })
 
   if (!result.success) {

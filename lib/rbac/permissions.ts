@@ -189,6 +189,27 @@ export const PERMISSIONS = {
   HRMS_HELPDESK_CREATE: "hrms.helpdesk.create",
   HRMS_HELPDESK_UPDATE: "hrms.helpdesk.update",
   HRMS_HELPDESK_RESOLVE: "hrms.helpdesk.resolve",
+
+  // Hotlist Module (Priority Talent Market)
+  HOTLIST_DASHBOARD_VIEW: "hotlist.dashboard.view",
+  HOTLIST_CANDIDATES_READ: "hotlist.candidates.read",
+  HOTLIST_CANDIDATES_WRITE: "hotlist.candidates.write",
+  HOTLIST_CANDIDATES_PACKAGE: "hotlist.candidates.package",
+  HOTLIST_CANDIDATES_EXPORT: "hotlist.candidates.export",
+  HOTLIST_REQUIREMENTS_READ: "hotlist.requirements.read",
+  HOTLIST_REQUIREMENTS_WRITE: "hotlist.requirements.write",
+  HOTLIST_REQUIREMENTS_URGENT: "hotlist.requirements.urgent",
+  HOTLIST_MATCHES_READ: "hotlist.matches.read",
+  HOTLIST_MATCHES_RUN: "hotlist.matches.run",
+  HOTLIST_CAMPAIGNS_READ: "hotlist.campaigns.read",
+  HOTLIST_CAMPAIGNS_CREATE: "hotlist.campaigns.create",
+  HOTLIST_CAMPAIGNS_SEND: "hotlist.campaigns.send",
+  HOTLIST_CAMPAIGNS_APPROVE: "hotlist.campaigns.approve",
+  HOTLIST_AUTOMATION_READ: "hotlist.automation.read",
+  HOTLIST_AUTOMATION_MANAGE: "hotlist.automation.manage",
+  HOTLIST_ANALYTICS_VIEW: "hotlist.analytics.view",
+  HOTLIST_DLP_OVERRIDE: "hotlist.dlp_override",
+  HOTLIST_CONSENT_MANAGE: "hotlist.consent.manage",
 } as const
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS]
@@ -218,4 +239,5 @@ export const PERMISSION_GROUPS = {
   reports: Object.values(PERMISSIONS).filter((p) => p.startsWith("reports.")),
   settings: Object.values(PERMISSIONS).filter((p) => p.startsWith("settings.")),
   hrms: Object.values(PERMISSIONS).filter((p) => p.startsWith("hrms.")),
+  hotlist: Object.values(PERMISSIONS).filter((p) => p.startsWith("hotlist.")),
 }

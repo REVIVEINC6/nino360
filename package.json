@@ -76,6 +76,7 @@
     "react-day-picker": "latest",
     "react-dom": "^19",
     "react-hook-form": "latest",
+    "react-loading-skeleton": "3.5.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "latest",
     "server-only": "latest",

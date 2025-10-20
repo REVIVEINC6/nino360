@@ -23,6 +23,9 @@ export function getSupabaseBrowserClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  console.log("[v0] Supabase Browser Client - URL exists:", !!supabaseUrl)
+  console.log("[v0] Supabase Browser Client - Key exists:", !!supabaseAnonKey)
+
   if (!supabaseUrl || !supabaseAnonKey) {
     logger.error("Supabase environment variables are not configured", undefined, {
       hasUrl: !!supabaseUrl,
@@ -38,7 +41,33 @@ export function getSupabaseBrowserClient() {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
+      // Add storage key to avoid conflicts
+      storageKey: "nino360-auth",
+      // Add flow type for better compatibility
+      flowType: "pkce",
     },
+    global: {
+      // Add custom fetch with error handling
+      fetch: async (url, options = {}) => {
+        try {
+          console.log("[v0] Supabase fetch:", url)
+          const response = await fetch(url, options)
+          console.log("[v0] Supabase fetch response:", response.status)
+          return response
+        } catch (error) {
+          console.error("[v0] Supabase fetch error:", error)
+          // Return a mock response to prevent the error from propagating
+          return new Response(JSON.stringify({ error: "Network error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          })
+        }
+      },
+    },
+  })
+
+  client.auth.onAuthStateChange((event, session) => {
+    console.log("[v0] Auth state change:", event, "Session exists:", !!session)
   })
 
   return client

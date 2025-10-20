@@ -35,6 +35,8 @@ import {
   Zap,
   Save,
   RefreshCw,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react"
 import {
   listUsers,
@@ -50,6 +52,7 @@ import {
 import { createBrowserClient } from "@supabase/ssr"
 import { useToast } from "@/hooks/use-toast"
 import { useFeatureFlags } from "@/hooks/use-feature-flags"
+import { motion } from "framer-motion"
 
 function AIInsights({ metrics }: { metrics: any }) {
   const [insights, setInsights] = useState<string[]>([])
@@ -58,7 +61,6 @@ function AIInsights({ metrics }: { metrics: any }) {
   const generateInsights = async () => {
     setLoading(true)
     try {
-      // Simulate AI-powered insights generation
       const newInsights = []
 
       if (metrics.suspended > metrics.total * 0.05) {
@@ -95,26 +97,38 @@ function AIInsights({ metrics }: { metrics: any }) {
   if (insights.length === 0) return null
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm">AI Insights</CardTitle>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <Card className="glass-card border-white/20">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20">
+                <Sparkles className="h-4 w-4 text-purple-600" />
+              </div>
+              <CardTitle className="text-sm bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                AI Insights
+              </CardTitle>
+            </div>
+            <Button variant="ghost" size="sm" onClick={generateInsights} disabled={loading}>
+              <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
+            </Button>
           </div>
-          <Button variant="ghost" size="sm" onClick={generateInsights} disabled={loading}>
-            <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {insights.map((insight, i) => (
-          <p key={i} className="text-sm text-muted-foreground">
-            {insight}
-          </p>
-        ))}
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {insights.map((insight, i) => (
+            <motion.p
+              key={i}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="text-sm text-muted-foreground"
+            >
+              {insight}
+            </motion.p>
+          ))}
+        </CardContent>
+      </Card>
+    </motion.div>
   )
 }
 
@@ -440,317 +454,341 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Global User Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Global User Management
+          </h1>
           <p className="text-muted-foreground">Manage user accounts, permissions, and access across all regions</p>
         </div>
         <div className="flex gap-2">
           {rpaEnabled && (
-            <Button variant="outline">
+            <Button variant="outline" className="glass-card border-white/20 bg-transparent">
               <Zap className="mr-2 h-4 w-4" />
               RPA Workflows
             </Button>
           )}
-          <Button>
+          <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
             <UserPlus className="mr-2 h-4 w-4" />
             Invite User
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="text-2xl font-bold">{metrics.total}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span className="text-2xl font-bold">{metrics.active}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Inactive</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <XCircle className="h-4 w-4 text-gray-500" />
-              <span className="text-2xl font-bold">{metrics.inactive}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Suspended</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Ban className="h-4 w-4 text-red-500" />
-              <span className="text-2xl font-bold">{metrics.suspended}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-yellow-500" />
-              <span className="text-2xl font-bold">{metrics.pending}</span>
-            </div>
-          </CardContent>
-        </Card>
+        {[
+          {
+            label: "Total Users",
+            value: metrics.total,
+            icon: Users,
+            color: "from-indigo-500 to-purple-500",
+            trend: null,
+          },
+          {
+            label: "Active",
+            value: metrics.active,
+            icon: CheckCircle,
+            color: "from-green-500 to-emerald-500",
+            trend: "+12%",
+          },
+          {
+            label: "Inactive",
+            value: metrics.inactive,
+            icon: XCircle,
+            color: "from-gray-500 to-slate-500",
+            trend: "-5%",
+          },
+          { label: "Suspended", value: metrics.suspended, icon: Ban, color: "from-red-500 to-rose-500", trend: "-2%" },
+          {
+            label: "Pending",
+            value: metrics.pending,
+            icon: Clock,
+            color: "from-yellow-500 to-orange-500",
+            trend: "+8%",
+          },
+        ].map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card className="glass-card border-white/20 hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-2 rounded-lg bg-gradient-to-r ${stat.color} bg-opacity-10`}>
+                      <stat.icon className={`h-4 w-4 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`} />
+                    </div>
+                    <span className="text-2xl font-bold">{stat.value}</span>
+                  </div>
+                  {stat.trend && (
+                    <div
+                      className={`flex items-center gap-1 text-xs ${stat.trend.startsWith("+") ? "text-green-600" : "text-red-600"}`}
+                    >
+                      {stat.trend.startsWith("+") ? (
+                        <TrendingUp className="h-3 w-3" />
+                      ) : (
+                        <TrendingDown className="h-3 w-3" />
+                      )}
+                      <span>{stat.trend}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
       {aiEnabled && <AIInsights metrics={metrics} />}
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>User Directory</CardTitle>
-              <CardDescription>Search, filter, and manage users across all regions</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleBulk("activate")}
-                disabled={selected.length === 0}
-              >
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Activate
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleBulk("deactivate")}
-                disabled={selected.length === 0}
-              >
-                <XCircle className="mr-2 h-4 w-4" />
-                Deactivate
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleBulk("suspend")}
-                disabled={selected.length === 0}
-              >
-                <Ban className="mr-2 h-4 w-4" />
-                Suspend
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowBulkRole(true)}
-                disabled={selected.length === 0}
-              >
-                <Shield className="mr-2 h-4 w-4" />
-                Assign Role
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="mr-2 h-4 w-4" />
-                Export CSV
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <Input
-              placeholder="Search by email or name..."
-              value={q}
-              onChange={(e) => {
-                setQ(e.target.value)
-                setPage(1)
-              }}
-              className="md:col-span-2"
-            />
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="created_at">Created Date</SelectItem>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="full_name">Name</SelectItem>
-                <SelectItem value="status">Status</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="outline" onClick={() => setShowSaveFilter(true)}>
-              <Save className="mr-2 h-4 w-4" />
-              Save Filter
-            </Button>
-          </div>
-
-          {savedFilters.length > 0 && (
-            <div className="flex gap-2 flex-wrap">
-              <span className="text-sm text-muted-foreground">Saved Filters:</span>
-              {savedFilters.map((filter) => (
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <Card className="glass-card border-white/20">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>User Directory</CardTitle>
+                <CardDescription>Search, filter, and manage users across all regions</CardDescription>
+              </div>
+              <div className="flex gap-2">
                 <Button
-                  key={filter.id}
                   variant="outline"
                   size="sm"
+                  onClick={() => handleBulk("activate")}
+                  disabled={selected.length === 0}
+                  className="glass-card border-white/20"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Activate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulk("deactivate")}
+                  disabled={selected.length === 0}
+                  className="glass-card border-white/20"
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Deactivate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulk("suspend")}
+                  disabled={selected.length === 0}
+                  className="glass-card border-white/20"
+                >
+                  <Ban className="mr-2 h-4 w-4" />
+                  Suspend
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowBulkRole(true)}
+                  disabled={selected.length === 0}
+                  className="glass-card border-white/20"
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Assign Role
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExport}
+                  className="glass-card border-white/20 bg-transparent"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Export CSV
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <Input
+                placeholder="Search by email or name..."
+                value={q}
+                onChange={(e) => {
+                  setQ(e.target.value)
+                  setPage(1)
+                }}
+                className="md:col-span-2"
+              />
+
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="created_at">Created Date</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="full_name">Name</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button variant="outline" onClick={() => setShowSaveFilter(true)}>
+                <Save className="mr-2 h-4 w-4" />
+                Save Filter
+              </Button>
+            </div>
+
+            {savedFilters.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                <span className="text-sm text-muted-foreground">Saved Filters:</span>
+                {savedFilters.map((filter) => (
+                  <Button
+                    key={filter.id}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const config = filter.filter_config
+                      setQ(config.q || "")
+                      setStatusFilter(config.status || "all")
+                      setRoleFilter(config.role || "")
+                      setSortBy(config.sortBy || "created_at")
+                      setSortOrder(config.sortOrder || "desc")
+                    }}
+                  >
+                    {filter.name}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            {loading ? (
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <Skeleton className="h-12 w-12" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-3 w-1/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : rows.length === 0 ? (
+              <div className="text-center py-12 space-y-3">
+                <div className="text-muted-foreground">
+                  <Filter className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">No users found</p>
+                  <p className="text-sm">Try adjusting your search or filters</p>
+                </div>
+                <Button
+                  variant="outline"
                   onClick={() => {
-                    const config = filter.filter_config
-                    setQ(config.q || "")
-                    setStatusFilter(config.status || "all")
-                    setRoleFilter(config.role || "")
-                    setSortBy(config.sortBy || "created_at")
-                    setSortOrder(config.sortOrder || "desc")
+                    setQ("")
+                    setStatusFilter("all")
+                    setRoleFilter("")
                   }}
                 >
-                  {filter.name}
+                  Clear Filters
                 </Button>
-              ))}
-            </div>
-          )}
-
-          {loading ? (
-            <div className="space-y-3">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <Skeleton className="h-12 w-12" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-3 w-1/4" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="text-center py-12 space-y-3">
-              <div className="text-muted-foreground">
-                <Filter className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium">No users found</p>
-                <p className="text-sm">Try adjusting your search or filters</p>
               </div>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setQ("")
-                  setStatusFilter("all")
-                  setRoleFilter("")
-                }}
-              >
-                Clear Filters
-              </Button>
-            </div>
-          ) : (
-            <div className="border rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="border-b bg-muted/50">
-                  <tr>
-                    <th className="p-3 text-left w-12">
-                      <Checkbox
-                        checked={selected.length === rows.length && rows.length > 0}
-                        onCheckedChange={toggleSelectAll}
-                      />
-                    </th>
-                    <th className="p-3 text-left">Email</th>
-                    <th className="p-3 text-left">Name</th>
-                    <th className="p-3 text-left">Status</th>
-                    <th className="p-3 text-left">Roles</th>
-                    <th className="p-3 text-left">Tenants</th>
-                    <th className="p-3 text-left">Created</th>
-                    {blockchainEnabled && <th className="p-3 text-left">Audit</th>}
-                    <th className="p-3 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r) => (
-                    <tr key={r.id} className="border-b hover:bg-muted/50">
-                      <td className="p-3">
-                        <Checkbox checked={selected.includes(r.id)} onCheckedChange={() => toggleSelect(r.id)} />
-                      </td>
-                      <td className="p-3">{r.email}</td>
-                      <td className="p-3">{r.full_name || "-"}</td>
-                      <td className="p-3">
-                        <Badge variant={getStatusColor(r.status)}>{r.status}</Badge>
-                      </td>
-                      <td className="p-3">
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                          {r.roles || "None"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-muted-foreground">{r.tenants || "-"}</td>
-                      <td className="p-3 text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</td>
-                      {blockchainEnabled && (
-                        <td className="p-3">
-                          <AuditBadge verified={true} />
-                        </td>
-                      )}
-                      <td className="p-3">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewDetails(r)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </td>
+            ) : (
+              <div className="border rounded-lg">
+                <table className="w-full text-sm">
+                  <thead className="border-b bg-muted/50">
+                    <tr>
+                      <th className="p-3 text-left w-12">
+                        <Checkbox
+                          checked={selected.length === rows.length && rows.length > 0}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </th>
+                      <th className="p-3 text-left">Email</th>
+                      <th className="p-3 text-left">Name</th>
+                      <th className="p-3 text-left">Status</th>
+                      <th className="p-3 text-left">Roles</th>
+                      <th className="p-3 text-left">Tenants</th>
+                      <th className="p-3 text-left">Created</th>
+                      {blockchainEnabled && <th className="p-3 text-left">Audit</th>}
+                      <th className="p-3 text-left">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {rows.map((r) => (
+                      <tr key={r.id} className="border-b hover:bg-muted/50">
+                        <td className="p-3">
+                          <Checkbox checked={selected.includes(r.id)} onCheckedChange={() => toggleSelect(r.id)} />
+                        </td>
+                        <td className="p-3">{r.email}</td>
+                        <td className="p-3">{r.full_name || "-"}</td>
+                        <td className="p-3">
+                          <Badge variant={getStatusColor(r.status)}>{r.status}</Badge>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                            {r.roles || "None"}
+                          </span>
+                        </td>
+                        <td className="p-3 text-muted-foreground">{r.tenants || "-"}</td>
+                        <td className="p-3 text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</td>
+                        {blockchainEnabled && (
+                          <td className="p-3">
+                            <AuditBadge verified={true} />
+                          </td>
+                        )}
+                        <td className="p-3">
+                          <Button variant="ghost" size="sm" onClick={() => handleViewDetails(r)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing {rows.length} of {total} users
-              {selected.length > 0 && ` (${selected.length} selected)`}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                Previous
-              </Button>
-              <span className="px-3 py-2 text-sm">
-                Page {page} of {totalPages}
-              </span>
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
-                Next
-              </Button>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Showing {rows.length} of {total} users
+                {selected.length > 0 && ` (${selected.length} selected)`}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-3 py-2 text-sm">
+                  Page {page} of {totalPages}
+                </span>
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
+                  Next
+                </Button>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">

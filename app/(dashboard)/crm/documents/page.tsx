@@ -1,14 +1,16 @@
-import { DocumentsCenter } from "@/components/crm/documents-center"
+import { Suspense } from "react"
+import { DocumentsHeader } from "@/components/crm-documents/documents-header"
+import { DocumentsContent } from "@/components/crm-documents/documents-content"
+import { AILoadingState } from "@/components/shared/ai-loading-state"
 
 export default async function DocumentsPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Documents & Proposals</h1>
-        <p className="text-muted-foreground">Quotes, proposals, and e-signature management</p>
-      </div>
+    <div className="min-h-screen ai-gradient-bg p-6 space-y-6">
+      <DocumentsHeader />
 
-      <DocumentsCenter />
+      <Suspense fallback={<AILoadingState message="Loading documents..." />}>
+        <DocumentsContent />
+      </Suspense>
     </div>
   )
 }

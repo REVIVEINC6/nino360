@@ -269,8 +269,8 @@ CREATE TABLE core.invoices (
 CREATE TABLE core.expenses (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   tenant_id UUID REFERENCES core.tenants(id) ON DELETE CASCADE,
-  project_id UUID REFERENCES core.projects(id),
-  vendor_id UUID REFERENCES core.vendors(id),
+  project_id UUID REFERENCES core.projects(id) ON DELETE CASCADE,
+  vendor_id UUID REFERENCES core.vendors(id) ON DELETE CASCADE,
   category TEXT,
   description TEXT NOT NULL,
   amount DECIMAL(15, 2) NOT NULL,
@@ -300,7 +300,13 @@ CREATE TABLE sec.audit_logs (
   tenant_id UUID,
   user_id UUID,
   action TEXT NOT NULL,
-  resource TEXT NOT NULL,
+  resource_type TEXT NOT NULL,
+  resource_id UUID,
+  old_values JSONB,
+  new_values JSONB,
+  ip_address INET,
+  user_agent TEXT,
+  metadata JSONB DEFAULT '{}',
   payload JSONB NOT NULL DEFAULT '{}'::JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -346,3 +352,5 @@ CREATE INDEX idx_jobs_tenant ON core.job_requisitions(tenant_id);
 CREATE INDEX idx_projects_tenant ON core.projects(tenant_id);
 CREATE INDEX idx_invoices_tenant ON core.invoices(tenant_id);
 CREATE INDEX idx_audit_tenant ON sec.audit_logs(tenant_id);
+CREATE INDEX idx_audit_user ON sec.audit_logs(user_id);
+CREATE INDEX idx_audit_resource ON sec.audit_logs(resource_type, resource_id);

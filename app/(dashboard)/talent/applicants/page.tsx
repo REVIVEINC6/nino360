@@ -5,6 +5,8 @@ import { ApplicantsSidebar } from "@/components/talent-applicants/applicants-sid
 import { LoadingSkeleton } from "@/components/talent-applicants/loading-skeleton"
 import { getContext } from "./actions"
 
+export const dynamic = "force-dynamic"
+
 export default async function ApplicantsPage() {
   const context = await getContext()
 

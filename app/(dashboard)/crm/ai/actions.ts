@@ -2,6 +2,8 @@
 
 import { createServerClient } from "@/lib/supabase/server"
 import { generateText } from "ai"
+import { revalidatePath } from "next/cache"
+import { createHash } from "crypto"
 
 // Type definitions
 type EmailType = "cold_outreach" | "follow_up" | "proposal" | "meeting_request" | "thank_you"
@@ -275,5 +277,280 @@ export async function exportCRMData(options: {
   } catch (error) {
     console.error("Export error:", error)
     return { success: false, error: "Failed to export data" }
+  }
+}
+
+// New AI Assistant Actions
+
+export async function createConversation(title: string, context?: any) {
+  try {
+    const supabase = await createServerClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    const { data: conversation, error } = await supabase
+      .from("ai_conversations")
+      .insert({
+        title,
+        user_id: user.id,
+        context: context || {},
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    // Blockchain audit
+    await logAIAudit(conversation.id, "conversation_created", conversation)
+
+    revalidatePath("/crm/ai")
+    return { success: true, data: conversation }
+  } catch (error) {
+    console.error("Create conversation error:", error)
+    return { success: false, error: "Failed to create conversation" }
+  }
+}
+
+export async function getConversations() {
+  try {
+    const supabase = await createServerClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    const { data: conversations, error } = await supabase
+      .from("ai_conversations")
+      .select("*, ai_messages(count)")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false })
+
+    if (error) throw error
+
+    return { success: true, data: conversations }
+  } catch (error) {
+    console.error("Get conversations error:", error)
+    return { success: false, error: "Failed to fetch conversations" }
+  }
+}
+
+export async function getConversationMessages(conversationId: string) {
+  try {
+    const supabase = await createServerClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    const { data: messages, error } = await supabase
+      .from("ai_messages")
+      .select("*")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true })
+
+    if (error) throw error
+
+    return { success: true, data: messages }
+  } catch (error) {
+    console.error("Get messages error:", error)
+    return { success: false, error: "Failed to fetch messages" }
+  }
+}
+
+export async function sendMessage(conversationId: string, content: string) {
+  try {
+    const supabase = await createServerClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    // Save user message
+    const { data: userMessage } = await supabase
+      .from("ai_messages")
+      .insert({
+        conversation_id: conversationId,
+        role: "user",
+        content,
+      })
+      .select()
+      .single()
+
+    // Get conversation context
+    const { data: conversation } = await supabase
+      .from("ai_conversations")
+      .select("*, ai_messages(*)")
+      .eq("id", conversationId)
+      .single()
+
+    // Get CRM context if available
+    let crmContext = ""
+    if (conversation?.context?.contact_id) {
+      const { data: contact } = await supabase
+        .from("crm_contacts")
+        .select("*")
+        .eq("id", conversation.context.contact_id)
+        .single()
+      if (contact) {
+        crmContext = `\nContact Context: ${contact.first_name} ${contact.last_name} at ${contact.company || "Unknown"}`
+      }
+    }
+
+    // Generate AI response
+    const { text } = await generateText({
+      model: "openai/gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an AI assistant for Nino360 CRM. Help users with:
+- Drafting emails and proposals
+- Analyzing leads and opportunities
+- Scheduling meetings and tasks
+- Providing insights and recommendations
+- Answering CRM-related questions
+${crmContext}
+
+Be concise, professional, and actionable.`,
+        },
+        ...(conversation?.ai_messages || []).slice(-10).map((m: any) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        {
+          role: "user",
+          content,
+        },
+      ],
+    })
+
+    // Save assistant message
+    const { data: assistantMessage } = await supabase
+      .from("ai_messages")
+      .insert({
+        conversation_id: conversationId,
+        role: "assistant",
+        content: text,
+        metadata: {
+          model: "gpt-4o",
+          tokens: text.length,
+        },
+      })
+      .select()
+      .single()
+
+    // Update conversation timestamp
+    await supabase.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId)
+
+    // Blockchain audit
+    await logAIAudit(conversationId, "message_sent", { userMessage, assistantMessage })
+
+    revalidatePath("/crm/ai")
+    return { success: true, data: assistantMessage }
+  } catch (error) {
+    console.error("Send message error:", error)
+    return { success: false, error: "Failed to send message" }
+  }
+}
+
+export async function executeAIAction(conversationId: string, actionType: string, input: any) {
+  try {
+    const supabase = await createServerClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    let output: any = null
+    let status = "completed"
+    let error = null
+
+    // Execute action based on type
+    switch (actionType) {
+      case "draft_email":
+        const emailResult = await draftEmail(input)
+        output = emailResult.data
+        if (!emailResult.success) {
+          status = "failed"
+          error = emailResult.error
+        }
+        break
+      case "score_lead":
+        const scoreResult = await scoreLeadWithAI(input.leadId)
+        output = scoreResult.data
+        if (!scoreResult.success) {
+          status = "failed"
+          error = scoreResult.error
+        }
+        break
+      case "generate_summary":
+        const summaryResult = await generateMeetingSummary(input.notes)
+        output = summaryResult.data
+        if (!summaryResult.success) {
+          status = "failed"
+          error = summaryResult.error
+        }
+        break
+      default:
+        status = "failed"
+        error = "Unknown action type"
+    }
+
+    // Log action
+    const { data: action } = await supabase
+      .from("ai_actions")
+      .insert({
+        conversation_id: conversationId,
+        action_type: actionType,
+        input,
+        output,
+        status,
+        error,
+        completed_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    // Blockchain audit
+    await logAIAudit(conversationId, "action_executed", action)
+
+    revalidatePath("/crm/ai")
+    return { success: status === "completed", data: output, error }
+  } catch (error) {
+    console.error("Execute action error:", error)
+    return { success: false, error: "Failed to execute action" }
+  }
+}
+
+async function logAIAudit(conversationId: string, actionType: string, data: any) {
+  try {
+    const supabase = await createServerClient()
+
+    const dataHash = createHash("sha256").update(JSON.stringify(data)).digest("hex")
+
+    // Get previous hash
+    const { data: lastAudit } = await supabase
+      .from("ai_audit_trail")
+      .select("blockchain_hash")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single()
+
+    const previousHash = lastAudit?.blockchain_hash || "0x0"
+    const blockchainHash = createHash("sha256")
+      .update(dataHash + previousHash)
+      .digest("hex")
+
+    await supabase.from("ai_audit_trail").insert({
+      conversation_id: conversationId,
+      action_type: actionType,
+      data_hash: dataHash,
+      previous_hash: previousHash,
+      blockchain_hash: blockchainHash,
+    })
+  } catch (error) {
+    console.error("AI audit logging error:", error)
   }
 }

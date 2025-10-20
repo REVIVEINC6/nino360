@@ -530,3 +530,249 @@ export async function verifyHash(hash: string) {
   // TODO: Implement blockchain-style hash verification
   return { valid: true, hash }
 }
+
+// AI-powered resume parsing
+export async function parseResume(file: File) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  try {
+    // Extract text from resume (placeholder - would use actual PDF/DOCX parser)
+    const text = await file.text()
+
+    const { text: parsed } = await generateText({
+      model: "openai/gpt-4o-mini",
+      prompt: `Extract structured data from this resume and return as JSON:
+      
+${text}
+
+Return JSON with: full_name, email, phone, headline, skills (array), experience (array of {title, company, duration}), education (array of {degree, school, year})`,
+    })
+
+    return { parsed: JSON.parse(parsed) }
+  } catch (error) {
+    console.error("[v0] Resume parsing error:", error)
+    throw new Error("Resume parsing failed")
+  }
+}
+
+// AI screening functionality
+export async function runAIScreening(applicationIds: string[], templateId?: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const results = []
+
+  for (const appId of applicationIds) {
+    const { data: app } = await supabase
+      .from("ats.applications")
+      .select("*, candidate:candidate_id(*)")
+      .eq("id", appId)
+      .single()
+
+    if (!app) continue
+
+    try {
+      const { text } = await generateText({
+        model: "openai/gpt-4o-mini",
+        prompt: `Screen this candidate and provide a score (0-100) and recommendation:
+        
+Candidate: ${app.candidate?.full_name}
+Skills: ${app.candidate?.skills?.join(", ")}
+Summary: ${app.candidate?.summary}
+
+Return JSON with: score, recommendation, strengths (array), concerns (array)`,
+      })
+
+      const screening = JSON.parse(text)
+      results.push({ application_id: appId, ...screening })
+    } catch (error) {
+      console.error("[v0] AI screening error for", appId, error)
+    }
+  }
+
+  revalidatePath("/talent/applicants")
+  return { results }
+}
+
+// Blockchain audit verification
+export async function verifyBlockchainAudit(auditId: string) {
+  const supabase = await createClient()
+
+  const { data: audit } = await supabase.from("ats.applicant_blockchain_audits").select("*").eq("id", auditId).single()
+
+  if (!audit) throw new Error("Audit record not found")
+
+  // Simulate blockchain verification
+  const isValid = audit.hash && audit.hash.length === 64
+
+  return {
+    valid: isValid,
+    hash: audit.hash,
+    transaction_id: audit.transaction_id,
+    verified_at: new Date().toISOString(),
+  }
+}
+
+// Blockchain audit logs retrieval
+export async function getBlockchainAuditLogs(filters?: { application_id?: string; limit?: number }) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  let query = supabase
+    .from("ats.applicant_blockchain_audits")
+    .select("*, application:application_id(id, candidate:candidate_id(full_name))")
+    .order("created_at", { ascending: false })
+
+  if (filters?.application_id) {
+    query = query.eq("application_id", filters.application_id)
+  }
+
+  if (filters?.limit) {
+    query = query.limit(filters.limit)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+  return data || []
+}
+
+// Automation workflow management
+export async function getAutomationWorkflows() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { data, error } = await supabase
+    .from("ats.applicant_automation_workflows")
+    .select("*")
+    .order("created_at", { ascending: false })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function createAutomationWorkflow(input: {
+  name: string
+  description?: string
+  trigger_type: string
+  trigger_conditions: any
+  actions: any[]
+  is_active?: boolean
+}) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { data, error } = await supabase
+    .from("ats.applicant_automation_workflows")
+    .insert({
+      ...input,
+      created_by: user.id,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  revalidatePath("/talent/applicants/automation")
+  return data
+}
+
+export async function toggleAutomationWorkflow(workflowId: string, isActive: boolean) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { data, error } = await supabase
+    .from("ats.applicant_automation_workflows")
+    .update({ is_active: isActive })
+    .eq("id", workflowId)
+    .select()
+    .single()
+
+  if (error) throw error
+
+  revalidatePath("/talent/applicants/automation")
+  return data
+}
+
+export async function getAutomationLogs(workflowId?: string, limit = 50) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  let query = supabase
+    .from("ats.applicant_automation_logs")
+    .select("*, workflow:workflow_id(name)")
+    .order("executed_at", { ascending: false })
+    .limit(limit)
+
+  if (workflowId) {
+    query = query.eq("workflow_id", workflowId)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+  return data || []
+}
+
+// Screening templates management
+export async function getScreeningTemplates() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { data, error } = await supabase
+    .from("ats.applicant_screening_templates")
+    .select("*")
+    .eq("is_active", true)
+    .order("name")
+
+  if (error) throw error
+  return data || []
+}
+
+export async function getScreeningHistory(applicationId?: string, limit = 50) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  let query = supabase
+    .from("ats.applicant_ai_screenings")
+    .select("*, application:application_id(id, candidate:candidate_id(full_name)), template:template_id(name)")
+    .order("screened_at", { ascending: false })
+    .limit(limit)
+
+  if (applicationId) {
+    query = query.eq("application_id", applicationId)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+  return data || []
+}

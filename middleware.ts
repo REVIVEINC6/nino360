@@ -62,7 +62,8 @@ export async function middleware(request: NextRequest) {
     "/projects",
     "/reports",
     "/settings",
-    "/hrms", // Added /hrms to protected paths
+    "/hrms",
+    "/hotlist", // Added /hotlist to protected paths
   ]
   const isProtectedPath = protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path))
 

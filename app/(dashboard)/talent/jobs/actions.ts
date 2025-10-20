@@ -1172,6 +1172,63 @@ Analysis (JSON only):`
 // EXPORTS
 // ============================================================================
 
+export async function getRequisition(requisition_id: string) {
+  try {
+    const { tenantId, supabase } = await getTenantContext()
+
+    // Get requisition with related data
+    const { data: req, error } = await supabase
+      .from("talent.requisitions")
+      .select(
+        `
+        *,
+        hiring_manager:users!hiring_manager(id, full_name, email, avatar_url),
+        recruiter:users!recruiter_id(id, full_name, email, avatar_url)
+      `,
+      )
+      .eq("id", requisition_id)
+      .eq("tenant_id", tenantId)
+      .single()
+
+    if (error) {
+      console.error("[v0] Error fetching requisition:", error)
+      return { success: false, error: "Requisition not found" }
+    }
+
+    // Get interview plan
+    const { data: plan } = await supabase
+      .from("talent.interview_plan")
+      .select("steps")
+      .eq("requisition_id", requisition_id)
+      .eq("tenant_id", tenantId)
+      .single()
+
+    // Get scorecards
+    const { data: scorecards } = await supabase
+      .from("talent.scorecards")
+      .select("id, name, dimensions, pos")
+      .eq("requisition_id", requisition_id)
+      .eq("tenant_id", tenantId)
+      .order("pos", { ascending: true })
+
+    // Get publish status
+    const publishStatus = await getPublishStatus(requisition_id)
+
+    return {
+      success: true,
+      data: {
+        ...req,
+        interview_plan: plan?.steps || [],
+        scorecards: scorecards || [],
+        publish_status: publishStatus,
+      },
+    }
+  } catch (error) {
+    console.error("[v0] Error getting requisition:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+  }
+}
+
 export async function exportJDPDF(requisition_id: string) {
   try {
     const { tenantId, user, supabase } = await getTenantContext()
@@ -1217,16 +1274,18 @@ export async function exportJDPDF(requisition_id: string) {
       metadata: {},
     })
 
-    // In production, this would return a PDF blob or URL
+    // In production, this would generate actual PDF and return signed URL
     return {
+      success: true,
       format: "pdf",
       filename: `${req.title.replace(/[^a-z0-9]/gi, "_")}_JD.pdf`,
       content: pdfContent,
+      url: `/api/requisitions/${requisition_id}/pdf`,
       note: "Stub: PDF generation would use a library like puppeteer or pdfkit",
     }
   } catch (error) {
     console.error("[v0] Error exporting JD PDF:", error)
-    throw error
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 

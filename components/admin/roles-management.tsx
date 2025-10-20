@@ -199,12 +199,16 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
   return (
     <div className="space-y-6">
       {showAiPanel && aiRecommendations.length > 0 && (
-        <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-blue-500/5">
+        <Card className="glass-card border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-blue-500/10">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-500" />
-                <CardTitle>AI Recommendations</CardTitle>
+                <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500">
+                  <Sparkles className="h-5 w-5 text-white" />
+                </div>
+                <CardTitle className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  AI Recommendations
+                </CardTitle>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setShowAiPanel(false)}>
                 ×
@@ -214,7 +218,7 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
           <CardContent>
             <div className="space-y-3">
               {aiRecommendations.map((rec, idx) => (
-                <div key={idx} className="p-3 rounded-lg bg-background/50 border">
+                <div key={idx} className="p-4 rounded-lg glass-card border-white/20">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="font-medium">{rec.title}</div>
@@ -224,6 +228,7 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
                       variant={
                         rec.priority === "high" ? "destructive" : rec.priority === "medium" ? "default" : "secondary"
                       }
+                      className="ml-2"
                     >
                       {rec.priority}
                     </Badge>
@@ -235,8 +240,7 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
         </Card>
       )}
 
-      {/* Filters and Actions */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle>Role Management</CardTitle>
           <CardDescription>Create, edit, and manage roles with their permissions</CardDescription>
@@ -250,11 +254,11 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
                   placeholder="Search roles..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8"
+                  className="pl-8 glass-input"
                 />
               </div>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-[150px] glass-input">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -262,18 +266,23 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
                   <SelectItem value="label">Label</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="icon" onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                className="glass-button"
+              >
                 {sortOrder === "asc" ? "↑" : "↓"}
               </Button>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={loadAiRecommendations}>
+              <Button variant="outline" onClick={loadAiRecommendations} className="glass-button bg-transparent">
                 <Sparkles className="h-4 w-4 mr-2" />
                 AI Insights
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="outline" className="glass-button bg-transparent">
                     <Zap className="h-4 w-4 mr-2" />
                     Automation
                   </Button>
@@ -292,7 +301,10 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
                   Delete ({selected.length})
                 </Button>
               )}
-              <Button onClick={() => setCreateOpen(true)}>
+              <Button
+                onClick={() => setCreateOpen(true)}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Create Role
               </Button>
@@ -301,8 +313,7 @@ export function RolesManagement({ initialRoles, initialPermissions }: RolesManag
         </CardContent>
       </Card>
 
-      {/* Roles Table */}
-      <Card>
+      <Card className="glass-card">
         <CardContent className="p-0">
           <Table>
             <TableHeader>

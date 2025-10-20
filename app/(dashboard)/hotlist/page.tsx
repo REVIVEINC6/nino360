@@ -1,16 +1,13 @@
-import { HotlistDashboard } from "@/components/hotlist/hotlist-dashboard"
+import { getKPITiles, getActivityStream } from "./actions/analytics"
+import { HotlistDashboardView } from "@/components/hotlist/hotlist-dashboard-view"
 
-export default function HotlistPage() {
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Hotlist Dashboard</h1>
-        <p className="text-muted-foreground">
-          Priority talent market - Response rate, time-to-submit, conversion metrics
-        </p>
-      </div>
+export const dynamic = "force-dynamic"
 
-      <HotlistDashboard />
-    </div>
-  )
+export default async function HotlistPage() {
+  const [kpisResult, activitiesResult] = await Promise.all([getKPITiles(), getActivityStream()])
+
+  const kpis = kpisResult.success ? kpisResult.data : []
+  const activities = activitiesResult.success ? activitiesResult.data : []
+
+  return <HotlistDashboardView initialKPIs={kpis} initialActivities={activities} />
 }

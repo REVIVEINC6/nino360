@@ -483,3 +483,72 @@ export async function verifyHash({
     }
   }
 }
+
+export async function getMlInsights() {
+  try {
+    const supabase = await createServerClient()
+    const cookieStore = await cookies()
+    const tenantId = cookieStore.get("tenant_id")?.value
+
+    if (!tenantId) {
+      return { error: "No active tenant" }
+    }
+
+    const { data: insights } = await supabase
+      .from("system_insights")
+      .select("*")
+      .eq("tenant_id", tenantId)
+      .eq("status", "new")
+      .order("impact_score", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(5)
+
+    return {
+      insights: insights || [],
+    }
+  } catch (error) {
+    console.error("[v0] getMlInsights error:", error)
+    return { error: "Failed to get ML insights" }
+  }
+}
+
+export async function getRpaStatus() {
+  try {
+    const supabase = await createServerClient()
+    const cookieStore = await cookies()
+    const tenantId = cookieStore.get("tenant_id")?.value
+
+    if (!tenantId) {
+      return { error: "No active tenant" }
+    }
+
+    const { data: workflows } = await supabase
+      .from("workflows")
+      .select("id, name, status, last_run, next_run")
+      .eq("tenant_id", tenantId)
+      .eq("status", "active")
+      .order("name")
+
+    const { data: recentExecutions } = await supabase
+      .from("workflow_executions")
+      .select("*")
+      .eq("tenant_id", tenantId)
+      .order("started_at", { ascending: false })
+      .limit(10)
+
+    const successRate =
+      recentExecutions && recentExecutions.length > 0
+        ? (recentExecutions.filter((e) => e.status === "completed").length / recentExecutions.length) * 100
+        : 0
+
+    return {
+      workflows: workflows || [],
+      recentExecutions: recentExecutions || [],
+      successRate: Math.round(successRate),
+      totalExecutions: recentExecutions?.length || 0,
+    }
+  } catch (error) {
+    console.error("[v0] getRpaStatus error:", error)
+    return { error: "Failed to get RPA status" }
+  }
+}

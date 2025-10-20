@@ -22,7 +22,7 @@ importers:
         version: 5.2.2(react-hook-form@7.65.0(react@19.0.0))
       '@playwright/test':
         specifier: latest
-        version: 1.56.0
+        version: 1.56.1
       '@radix-ui/react-accordion':
         specifier: 1.2.2
         version: 1.2.2(@types/react-dom@19.0.0)(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -109,10 +109,10 @@ importers:
         version: 4.3.1(react@19.0.0)
       '@supabase/ssr':
         specifier: latest
-        version: 0.7.0(@supabase/supabase-js@2.75.0)
+        version: 0.7.0(@supabase/supabase-js@2.75.1)
       '@supabase/supabase-js':
         specifier: latest
-        version: 2.75.0
+        version: 2.75.1
       '@types/debug':
         specifier: latest
         version: 4.1.12
@@ -124,19 +124,19 @@ importers:
         version: 1.35.6
       '@vercel/analytics':
         specifier: 1.3.1
-        version: 1.3.1(next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
+        version: 1.3.1(next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       '@vercel/blob':
         specifier: latest
         version: 2.0.0
       '@vitest/browser':
         specifier: latest
-        version: 3.2.4(playwright@1.56.0)(vite@7.1.9(@types/node@22.0.0)(jiti@2.6.1)(lightningcss@1.30.1))(vitest@3.2.4)
+        version: 3.2.4(playwright@1.56.1)(vite@7.1.9(@types/node@22.0.0)(jiti@2.6.1)(lightningcss@1.30.1))(vitest@3.2.4)
       '@vitest/ui':
         specifier: latest
         version: 3.2.4(vitest@3.2.4)
       ai:
         specifier: latest
-        version: 5.0.72(zod@3.25.67)
+        version: 5.0.76(zod@3.25.67)
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.5.0)
@@ -166,22 +166,22 @@ importers:
         version: 0.0.1-security
       geist:
         specifier: ^1.3.1
-        version: 1.3.1(next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
+        version: 1.3.1(next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       happy-dom:
         specifier: latest
-        version: 20.0.2
+        version: 20.0.7
       input-otp:
         specifier: 1.4.1
         version: 1.4.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       jsdom:
         specifier: latest
-        version: 27.0.0(postcss@8.5.0)
+        version: 27.0.1(postcss@8.5.0)
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@19.0.0)
       next:
         specifier: 15.2.4
-        version: 15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next-themes:
         specifier: latest
         version: 0.4.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -203,12 +203,15 @@ importers:
       react-hook-form:
         specifier: latest
         version: 7.65.0(react@19.0.0)
+      react-loading-skeleton:
+        specifier: 3.5.0
+        version: 3.5.0(react@19.0.0)
       react-resizable-panels:
         specifier: ^2.1.7
         version: 2.1.7(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       recharts:
         specifier: latest
-        version: 3.2.1(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react-is@19.2.0)(react@19.0.0)(redux@5.0.1)
+        version: 3.3.0(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react-is@19.2.0)(react@19.0.0)(redux@5.0.1)
       server-only:
         specifier: latest
         version: 0.0.1
@@ -232,7 +235,7 @@ importers:
         version: 0.9.9(@types/react-dom@19.0.0)(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       vitest:
         specifier: latest
-        version: 3.2.4(@edge-runtime/vm@5.0.0)(@types/debug@4.1.12)(@types/node@22.0.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.0.2)(jiti@2.6.1)(jsdom@27.0.0(postcss@8.5.0))(lightningcss@1.30.1)
+        version: 3.2.4(@edge-runtime/vm@5.0.0)(@types/debug@4.1.12)(@types/node@22.0.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.0.7)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.0))(lightningcss@1.30.1)
       zod:
         specifier: 3.25.67
         version: 3.25.67
@@ -264,8 +267,8 @@ importers:
 
 packages:
 
-  '@ai-sdk/gateway@1.0.40':
-    resolution: {integrity: sha512-zlixM9jac0w0jjYl5gwNq+w9nydvraAmLaZQbbh+QpHU+OPkTIZmyBcKeTq5eGQKQxhi+oquHxzCSKyJx3egGw==}
+  '@ai-sdk/gateway@2.0.0':
+    resolution: {integrity: sha512-Gj0PuawK7NkZuyYgO/h5kDK/l6hFOjhLdTq3/Lli1FTl47iGmwhH1IZQpAL3Z09BeFYWakcwUmn02ovIm2wy9g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -291,8 +294,8 @@ packages:
   '@asamuzakjp/css-color@4.0.5':
     resolution: {integrity: sha512-lMrXidNhPGsDjytDy11Vwlb6OIGrT3CmLg3VWNFyWkLWtijKl7xjvForlh8vuj0SHGjgl4qZEQzUmYTeQA2JFQ==}
 
-  '@asamuzakjp/dom-selector@6.6.2':
-    resolution: {integrity: sha512-+AG0jN9HTwfDLBhjhX1FKi6zlIAc/YGgEHlN/OMaHD1pOPFsC5CpYQpLkPX0aFjyaVmoq9330cQDCU4qnSL1qA==}
+  '@asamuzakjp/dom-selector@6.7.2':
+    resolution: {integrity: sha512-ccKogJI+0aiDhOahdjANIc9SDixSud1gbwdVrhn7kMopAtLXqsz9MKmQQtIl6Y5aC2IYq+j4dz/oedL2AVMmVQ==}
 
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
@@ -736,8 +739,8 @@ packages:
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
 
-  '@playwright/test@1.56.0':
-    resolution: {integrity: sha512-Tzh95Twig7hUwwNe381/K3PggZBZblKUe2wv25oIpzWLr6Z0m4KgV1ZVIjnR6GM9ANEqjZD7XsZEa6JL/7YEgg==}
+  '@playwright/test@1.56.1':
+    resolution: {integrity: sha512-vSMYtL/zOcFpvJCW71Q/OEGQb7KYBPAdKh35WNSkaZA75JlAO8ED8UN6GUNTm3drWomcbcqRPFqQbLae8yBTdg==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -1826,32 +1829,32 @@ packages:
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
-  '@supabase/auth-js@2.75.0':
-    resolution: {integrity: sha512-J8TkeqCOMCV4KwGKVoxmEBuDdHRwoInML2vJilthOo7awVCro2SM+tOcpljORwuBQ1vHUtV62Leit+5wlxrNtw==}
+  '@supabase/auth-js@2.75.1':
+    resolution: {integrity: sha512-zktlxtXstQuVys/egDpVsargD9hQtG20CMdtn+mMn7d2Ulkzy2tgUT5FUtpppvCJtd9CkhPHO/73rvi5W6Am5A==}
 
-  '@supabase/functions-js@2.75.0':
-    resolution: {integrity: sha512-18yk07Moj/xtQ28zkqswxDavXC3vbOwt1hDuYM3/7xPnwwpKnsmPyZ7bQ5th4uqiJzQ135t74La9tuaxBR6e7w==}
+  '@supabase/functions-js@2.75.1':
+    resolution: {integrity: sha512-xO+01SUcwVmmo67J7Htxq8FmhkYLFdWkxfR/taxBOI36wACEUNQZmroXGPl4PkpYxBO7TaDsRHYGxUpv9zTKkg==}
 
   '@supabase/node-fetch@2.6.15':
     resolution: {integrity: sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==}
     engines: {node: 4.x || >=6.0.0}
 
-  '@supabase/postgrest-js@2.75.0':
-    resolution: {integrity: sha512-YfBz4W/z7eYCFyuvHhfjOTTzRrQIvsMG2bVwJAKEVVUqGdzqfvyidXssLBG0Fqlql1zJFgtsPpK1n4meHrI7tg==}
+  '@supabase/postgrest-js@2.75.1':
+    resolution: {integrity: sha512-FiYBD0MaKqGW8eo4Xqu7/100Xm3ddgh+3qHtqS18yQRoglJTFRQCJzY1xkrGS0JFHE2YnbjL6XCiOBXiG8DK4Q==}
 
-  '@supabase/realtime-js@2.75.0':
-    resolution: {integrity: sha512-B4Xxsf2NHd5cEnM6MGswOSPSsZKljkYXpvzKKmNxoUmNQOfB7D8HOa6NwHcUBSlxcjV+vIrYKcYXtavGJqeGrw==}
+  '@supabase/realtime-js@2.75.1':
+    resolution: {integrity: sha512-lBIJ855bUsBFScHA/AY+lxIFkubduUvmwbagbP1hq0wDBNAsYdg3ql80w8YmtXCDjkCwlE96SZqcFn7BGKKJKQ==}
 
   '@supabase/ssr@0.7.0':
     resolution: {integrity: sha512-G65t5EhLSJ5c8hTCcXifSL9Q/ZRXvqgXeNo+d3P56f4U1IxwTqjB64UfmfixvmMcjuxnq2yGqEWVJqUcO+AzAg==}
     peerDependencies:
       '@supabase/supabase-js': ^2.43.4
 
-  '@supabase/storage-js@2.75.0':
-    resolution: {integrity: sha512-wpJMYdfFDckDiHQaTpK+Ib14N/O2o0AAWWhguKvmmMurB6Unx17GGmYp5rrrqCTf8S1qq4IfIxTXxS4hzrUySg==}
+  '@supabase/storage-js@2.75.1':
+    resolution: {integrity: sha512-WdGEhroflt5O398Yg3dpf1uKZZ6N3CGloY9iGsdT873uWbkQKoP0wG8mtx98dh0fhj6dAlzBqOAvnlV12cJfzA==}
 
-  '@supabase/supabase-js@2.75.0':
-    resolution: {integrity: sha512-8UN/vATSgS2JFuJlMVr51L3eUDz+j1m7Ww63wlvHLKULzCDaVWYzvacCjBTLW/lX/vedI2LBI4Vg+01G9ufsJQ==}
+  '@supabase/supabase-js@2.75.1':
+    resolution: {integrity: sha512-GEPVBvjQimcMd9z5K1eTKTixTRb6oVbudoLQ9JKqTUJnR6GQdBU4OifFZean1AnHfsQwtri1fop2OWwsMv019w==}
 
   '@swc/counter@0.1.3':
     resolution: {integrity: sha512-e2BR4lsJkkRlKZ/qCHPw9ZaSxc0MVUd7gtbtaB7aMvHeJVYe8sOB8DBZkP2DtISHGSku9sCK6T6cnY0CtXrOCQ==}
@@ -2059,8 +2062,8 @@ packages:
     resolution: {integrity: sha512-oAj7Pdy83YKSwIaMFoM7zFeLYWRc+qUpW3PiDSblxQMnGFb43qs4bmfq7dr/+JIfwhs6PTwe1o2YBwKhyjWxXw==}
     engines: {node: '>=20.0.0'}
 
-  '@vercel/oidc@3.0.2':
-    resolution: {integrity: sha512-JekxQ0RApo4gS4un/iMGsIL1/k4KUBe3HmnGcDvzHuFBdQdudEJgTqcsJC7y6Ul4Yw5CeykgvQbX2XeEJd0+DA==}
+  '@vercel/oidc@3.0.3':
+    resolution: {integrity: sha512-yNEQvPcVrK9sIe637+I0jD6leluPxzwJKx/Haw6F4H77CdDsszUn5V3o96LPziXkSNE2B83+Z3mjqGKBK/R6Gg==}
     engines: {node: '>= 20'}
 
   '@vitest/browser@3.2.4':
@@ -2119,8 +2122,8 @@ packages:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
 
-  ai@5.0.72:
-    resolution: {integrity: sha512-LB4APrlESLGHG/5x+VVdl0yYPpHPHpnGd5Gwl7AWVL+n7T0GYsNos/S/6dZ5CZzxLnPPEBkRgvJC4rupeZqyNg==}
+  ai@5.0.76:
+    resolution: {integrity: sha512-ZCxi1vrpyCUnDbtYrO/W8GLvyacV9689f00yshTIQ3mFFphbD7eIv40a2AOZBv3GGRA7SSRYIDnr56wcS/gyQg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -2664,8 +2667,8 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  happy-dom@20.0.2:
-    resolution: {integrity: sha512-pYOyu624+6HDbY+qkjILpQGnpvZOusItCk+rvF5/V+6NkcgTKnbOldpIy22tBnxoaLtlM9nXgoqAcW29/B7CIw==}
+  happy-dom@20.0.7:
+    resolution: {integrity: sha512-CywLfzmYxP5OYpuAG0usFY0CpxJtwYR+w8Mms5J8W29Y2Pzf6rbfQS2M523tRZTb0oLA+URopPtnAQX2fupHZQ==}
     engines: {node: '>=20.0.0'}
 
   has-symbols@1.1.0:
@@ -2765,8 +2768,8 @@ packages:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
     hasBin: true
 
-  jsdom@27.0.0:
-    resolution: {integrity: sha512-lIHeR1qlIRrIN5VMccd8tI2Sgw6ieYXSVktcSHaNe3Z5nE/tcPQYQWOq00wxMvYOsz+73eAkNenVvmPC6bba9A==}
+  jsdom@27.0.1:
+    resolution: {integrity: sha512-SNSQteBL1IlV2zqhwwolaG9CwhIhTvVHWg3kTss/cLE7H/X4644mtPQqYvCfsSrGQWt9hSZcgOXX8bOZaMN+kA==}
     engines: {node: '>=20'}
     peerDependencies:
       canvas: ^3.0.0
@@ -2993,8 +2996,8 @@ packages:
   parse-svg-path@0.1.2:
     resolution: {integrity: sha512-JyPSBnkTJ0AI8GGJLfMXvKq42cj5c006fnLz6fXy6zfoVjJizi8BNTpu8on8ziI1cKy9d9DGNuY17Ce7wuejpQ==}
 
-  parse5@7.3.0:
-    resolution: {integrity: sha512-IInvU7fabl34qmi9gY8XOVxhYyMyuH2xUNpb2q8/Y+7552KlejkRvqvD19nMoUW/uQGGbqNpA6Tufu5FL5BZgw==}
+  parse5@8.0.0:
+    resolution: {integrity: sha512-9m4m5GSgXjL4AjumKzq1Fgfp3Z8rsvjRNbnkVwfu2ImRqE5D0LnY2QfDen18FSY9C573YU5XxSapdHZTZ2WolA==}
 
   path@0.12.7:
     resolution: {integrity: sha512-aXXC6s+1w7otVF9UletFkFcDsJeO7lSZBPUQhtb5O0xJe8LtYhj/GxldoL09bBj9+ZmE2hNoHqQSFMN5fikh4Q==}
@@ -3016,13 +3019,13 @@ packages:
     resolution: {integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==}
     engines: {node: '>=12'}
 
-  playwright-core@1.56.0:
-    resolution: {integrity: sha512-1SXl7pMfemAMSDn5rkPeZljxOCYAmQnYLBTExuh6E8USHXGSX3dx6lYZN/xPpTz1vimXmPA9CDnILvmJaB8aSQ==}
+  playwright-core@1.56.1:
+    resolution: {integrity: sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==}
     engines: {node: '>=18'}
     hasBin: true
 
-  playwright@1.56.0:
-    resolution: {integrity: sha512-X5Q1b8lOdWIE4KAoHpW3SE8HvUB+ZZsUoN64ZhjnN8dOb1UpujxBtENGiZFE+9F/yhzJwYa+ca3u43FeLbboHA==}
+  playwright@1.56.1:
+    resolution: {integrity: sha512-aFi5B0WovBHTEvpM3DzXTUaeN6eN0qWnTkKx4NQaH4Wvcmc153PdaY2UBdSYKaGYw+UyWXSVyxDUg5DoPEttjw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -3112,6 +3115,11 @@ packages:
   react-is@19.2.0:
     resolution: {integrity: sha512-x3Ax3kNSMIIkyVYhWPyO09bu0uttcAIoecO/um/rKGQ4EltYWVYtyiGkS/3xMynrbVQdS69Jhlv8FXUEZehlzA==}
 
+  react-loading-skeleton@3.5.0:
+    resolution: {integrity: sha512-gxxSyLbrEAdXTKgfbpBEFZCO/P153DnqSCQau2+o6lNy1jgMRr2MmRmOzMmyrwSaSYLRB8g7b0waYPmUjz7IhQ==}
+    peerDependencies:
+      react: '>=16.8.0'
+
   react-redux@9.2.0:
     resolution: {integrity: sha512-ROY9fvHhwOD9ySfrF0wmvu//bKCQ6AeZZq1nJNtbDC+kk5DuSuNX/n6YWYF/SYy7bSba4D4FSz8DJeKY/S/r+g==}
     peerDependencies:
@@ -3164,8 +3172,8 @@ packages:
     resolution: {integrity: sha512-V8AVnmPIICiWpGfm6GLzCR/W5FXLchHop40W4nXBmdlEceh16rCN8O8LNWm5bh5XUX91fh7KpA+W0TgMKmgTpQ==}
     engines: {node: '>=0.10.0'}
 
-  recharts@3.2.1:
-    resolution: {integrity: sha512-0JKwHRiFZdmLq/6nmilxEZl3pqb4T+aKkOkOi/ZISRZwfBhVMgInxzlYU9D4KnCH3KINScLy68m/OvMXoYGZUw==}
+  recharts@3.3.0:
+    resolution: {integrity: sha512-Vi0qmTB0iz1+/Cz9o5B7irVyUjX2ynvEgImbgMt/3sKRREcUM07QiYjS1QpAVrkmVlXqy5gykq4nGWMz9AS4Rg==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -3679,11 +3687,11 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/gateway@1.0.40(zod@3.25.67)':
+  '@ai-sdk/gateway@2.0.0(zod@3.25.67)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.12(zod@3.25.67)
-      '@vercel/oidc': 3.0.2
+      '@vercel/oidc': 3.0.3
       zod: 3.25.67
 
   '@ai-sdk/provider-utils@3.0.12(zod@3.25.67)':
@@ -3712,7 +3720,7 @@ snapshots:
       '@csstools/css-tokenizer': 3.0.4
       lru-cache: 11.2.2
 
-  '@asamuzakjp/dom-selector@6.6.2':
+  '@asamuzakjp/dom-selector@6.7.2':
     dependencies:
       '@asamuzakjp/nwsapi': 2.3.9
       bidi-js: 1.0.3
@@ -4016,9 +4024,9 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
-  '@playwright/test@1.56.0':
+  '@playwright/test@1.56.1':
     dependencies:
-      playwright: 1.56.0
+      playwright: 1.56.1
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -5149,11 +5157,11 @@ snapshots:
 
   '@standard-schema/utils@0.3.0': {}
 
-  '@supabase/auth-js@2.75.0':
+  '@supabase/auth-js@2.75.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/functions-js@2.75.0':
+  '@supabase/functions-js@2.75.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
@@ -5161,11 +5169,11 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  '@supabase/postgrest-js@2.75.0':
+  '@supabase/postgrest-js@2.75.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/realtime-js@2.75.0':
+  '@supabase/realtime-js@2.75.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
       '@types/phoenix': 1.6.6
@@ -5175,23 +5183,23 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@supabase/ssr@0.7.0(@supabase/supabase-js@2.75.0)':
+  '@supabase/ssr@0.7.0(@supabase/supabase-js@2.75.1)':
     dependencies:
-      '@supabase/supabase-js': 2.75.0
+      '@supabase/supabase-js': 2.75.1
       cookie: 1.0.2
 
-  '@supabase/storage-js@2.75.0':
+  '@supabase/storage-js@2.75.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/supabase-js@2.75.0':
+  '@supabase/supabase-js@2.75.1':
     dependencies:
-      '@supabase/auth-js': 2.75.0
-      '@supabase/functions-js': 2.75.0
+      '@supabase/auth-js': 2.75.1
+      '@supabase/functions-js': 2.75.1
       '@supabase/node-fetch': 2.6.15
-      '@supabase/postgrest-js': 2.75.0
-      '@supabase/realtime-js': 2.75.0
-      '@supabase/storage-js': 2.75.0
+      '@supabase/postgrest-js': 2.75.1
+      '@supabase/realtime-js': 2.75.1
+      '@supabase/storage-js': 2.75.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -5375,11 +5383,11 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  '@vercel/analytics@1.3.1(next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
+  '@vercel/analytics@1.3.1(next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
     dependencies:
       server-only: 0.0.1
     optionalDependencies:
-      next: 15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next: 15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react: 19.0.0
 
   '@vercel/blob@2.0.0':
@@ -5390,9 +5398,9 @@ snapshots:
       throttleit: 2.1.0
       undici: 5.29.0
 
-  '@vercel/oidc@3.0.2': {}
+  '@vercel/oidc@3.0.3': {}
 
-  '@vitest/browser@3.2.4(playwright@1.56.0)(vite@7.1.9(@types/node@22.0.0)(jiti@2.6.1)(lightningcss@1.30.1))(vitest@3.2.4)':
+  '@vitest/browser@3.2.4(playwright@1.56.1)(vite@7.1.9(@types/node@22.0.0)(jiti@2.6.1)(lightningcss@1.30.1))(vitest@3.2.4)':
     dependencies:
       '@testing-library/dom': 10.4.1
       '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
@@ -5401,10 +5409,10 @@ snapshots:
       magic-string: 0.30.19
       sirv: 3.0.2
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@edge-runtime/vm@5.0.0)(@types/debug@4.1.12)(@types/node@22.0.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.0.2)(jiti@2.6.1)(jsdom@27.0.0(postcss@8.5.0))(lightningcss@1.30.1)
+      vitest: 3.2.4(@edge-runtime/vm@5.0.0)(@types/debug@4.1.12)(@types/node@22.0.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.0.7)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.0))(lightningcss@1.30.1)
       ws: 8.18.3
     optionalDependencies:
-      playwright: 1.56.0
+      playwright: 1.56.1
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -5456,7 +5464,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@edge-runtime/vm@5.0.0)(@types/debug@4.1.12)(@types/node@22.0.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.0.2)(jiti@2.6.1)(jsdom@27.0.0(postcss@8.5.0))(lightningcss@1.30.1)
+      vitest: 3.2.4(@edge-runtime/vm@5.0.0)(@types/debug@4.1.12)(@types/node@22.0.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.0.7)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.0))(lightningcss@1.30.1)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -5468,9 +5476,9 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai@5.0.72(zod@3.25.67):
+  ai@5.0.76(zod@3.25.67):
     dependencies:
-      '@ai-sdk/gateway': 1.0.40(zod@3.25.67)
+      '@ai-sdk/gateway': 2.0.0(zod@3.25.67)
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.12(zod@3.25.67)
       '@opentelemetry/api': 1.9.0
@@ -5949,9 +5957,9 @@ snapshots:
 
   function-bind@1.1.2: {}
 
-  geist@1.3.1(next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
+  geist@1.3.1(next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
     dependencies:
-      next: 15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next: 15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
 
   get-caller-file@2.0.5: {}
 
@@ -5991,7 +5999,7 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  happy-dom@20.0.2:
+  happy-dom@20.0.7:
     dependencies:
       '@types/node': 20.19.21
       '@types/whatwg-mimetype': 3.0.2
@@ -6079,9 +6087,9 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jsdom@27.0.0(postcss@8.5.0):
+  jsdom@27.0.1(postcss@8.5.0):
     dependencies:
-      '@asamuzakjp/dom-selector': 6.6.2
+      '@asamuzakjp/dom-selector': 6.7.2
       cssstyle: 5.3.1(postcss@8.5.0)
       data-urls: 6.0.0
       decimal.js: 10.6.0
@@ -6089,7 +6097,7 @@ snapshots:
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
       is-potential-custom-element-name: 1.0.1
-      parse5: 7.3.0
+      parse5: 8.0.0
       rrweb-cssom: 0.8.0
       saxes: 6.0.0
       symbol-tree: 3.2.4
@@ -6216,7 +6224,7 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  next@15.2.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@next/env': 15.2.4
       '@swc/counter': 0.1.3
@@ -6237,7 +6245,7 @@ snapshots:
       '@next/swc-win32-arm64-msvc': 15.2.4
       '@next/swc-win32-x64-msvc': 15.2.4
       '@opentelemetry/api': 1.9.0
-      '@playwright/test': 1.56.0
+      '@playwright/test': 1.56.1
       sharp: 0.33.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -6294,7 +6302,7 @@ snapshots:
 
   parse-svg-path@0.1.2: {}
 
-  parse5@7.3.0:
+  parse5@8.0.0:
     dependencies:
       entities: 6.0.1
 
@@ -6313,11 +6321,11 @@ snapshots:
 
   picomatch@4.0.3: {}
 
-  playwright-core@1.56.0: {}
+  playwright-core@1.56.1: {}
 
-  playwright@1.56.0:
+  playwright@1.56.1:
     dependencies:
-      playwright-core: 1.56.0
+      playwright-core: 1.56.1
     optionalDependencies:
       fsevents: 2.3.2
 
@@ -6443,6 +6451,10 @@ snapshots:
 
   react-is@19.2.0: {}
 
+  react-loading-skeleton@3.5.0(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+
   react-redux@9.2.0(@types/react@19.0.0)(react@19.0.0)(redux@5.0.1):
     dependencies:
       '@types/use-sync-external-store': 0.0.6
@@ -6486,7 +6498,7 @@ snapshots:
 
   react@19.0.0: {}
 
-  recharts@3.2.1(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react-is@19.2.0)(react@19.0.0)(redux@5.0.1):
+  recharts@3.3.0(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react-is@19.2.0)(react@19.0.0)(redux@5.0.1):
     dependencies:
       '@reduxjs/toolkit': 2.9.0(react-redux@9.2.0(@types/react@19.0.0)(react@19.0.0)(redux@5.0.1))(react@19.0.0)
       clsx: 2.1.1
@@ -6926,7 +6938,7 @@ snapshots:
       jiti: 2.6.1
       lightningcss: 1.30.1
 
-  vitest@3.2.4(@edge-runtime/vm@5.0.0)(@types/debug@4.1.12)(@types/node@22.0.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.0.2)(jiti@2.6.1)(jsdom@27.0.0(postcss@8.5.0))(lightningcss@1.30.1):
+  vitest@3.2.4(@edge-runtime/vm@5.0.0)(@types/debug@4.1.12)(@types/node@22.0.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.0.7)(jiti@2.6.1)(jsdom@27.0.1(postcss@8.5.0))(lightningcss@1.30.1):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
@@ -6955,10 +6967,10 @@ snapshots:
       '@edge-runtime/vm': 5.0.0
       '@types/debug': 4.1.12
       '@types/node': 22.0.0
-      '@vitest/browser': 3.2.4(playwright@1.56.0)(vite@7.1.9(@types/node@22.0.0)(jiti@2.6.1)(lightningcss@1.30.1))(vitest@3.2.4)
+      '@vitest/browser': 3.2.4(playwright@1.56.1)(vite@7.1.9(@types/node@22.0.0)(jiti@2.6.1)(lightningcss@1.30.1))(vitest@3.2.4)
       '@vitest/ui': 3.2.4(vitest@3.2.4)
-      happy-dom: 20.0.2
-      jsdom: 27.0.0(postcss@8.5.0)
+      happy-dom: 20.0.7
+      jsdom: 27.0.1(postcss@8.5.0)
     transitivePeerDependencies:
       - jiti
       - less

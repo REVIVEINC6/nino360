@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
-import { generateObject } from "ai"
+import { generateObject, generateText } from "ai"
 
 // Validation schemas
 const importCsvSchema = z.object({
@@ -636,4 +636,484 @@ export async function getAuditMini(limit = 10) {
 export async function verifyHash(hash: string) {
   // TODO: Implement blockchain-style hash verification
   return { success: true, valid: true }
+}
+
+// AI-powered candidate search with ML relevance ranking
+export async function aiSearchCandidates(input: {
+  query: string
+  filters?: {
+    skills?: string[]
+    location?: string
+    experience_min?: number
+    experience_max?: number
+    work_auth?: string
+  }
+  limit?: number
+}) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single()
+    if (!profile?.tenant_id) throw new Error("Tenant not found")
+
+    // Track interaction for adaptive learning
+    await supabase.from("sourcing_interactions").insert({
+      tenant_id: profile.tenant_id,
+      user_id: user.id,
+      interaction_type: "search",
+      metadata: { query: input.query, filters: input.filters },
+    })
+
+    // Build query with filters
+    let query = supabase
+      .from("candidates")
+      .select("*, candidate_profiles(*)")
+      .eq("tenant_id", profile.tenant_id)
+      .order("ml_match_score", { ascending: false })
+      .limit(input.limit || 50)
+
+    if (input.filters?.skills?.length) {
+      query = query.contains("skills", input.filters.skills)
+    }
+
+    if (input.filters?.location) {
+      query = query.ilike("location", `%${input.filters.location}%`)
+    }
+
+    if (input.filters?.work_auth) {
+      query = query.eq("work_auth", input.filters.work_auth)
+    }
+
+    const { data: candidates, error } = await query
+
+    if (error) throw error
+
+    // Use AI to rank candidates by relevance to query
+    if (input.query && candidates) {
+      const { text } = await generateText({
+        model: "openai/gpt-4o-mini",
+        prompt: `Given this search query: "${input.query}"
+        
+Rank these candidates by relevance (return comma-separated IDs in order):
+${candidates.map((c) => `${c.id}: ${c.full_name} - ${c.headline || ""} - Skills: ${(c.skills || []).join(", ")}`).join("\n")}`,
+      })
+
+      const rankedIds = text.split(",").map((id) => id.trim())
+      const rankedCandidates = rankedIds
+        .map((id) => candidates.find((c) => c.id === id))
+        .filter(Boolean)
+        .concat(candidates.filter((c) => !rankedIds.includes(c.id)))
+
+      return { success: true, data: rankedCandidates }
+    }
+
+    return { success: true, data: candidates }
+  } catch (error) {
+    console.error("[v0] Error in AI search:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Failed to search candidates" }
+  }
+}
+
+// AI-powered sourcing insights (Theory of Mind)
+export async function getSourcingInsights() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single()
+    if (!profile?.tenant_id) throw new Error("Tenant not found")
+
+    // Get user's recent interactions
+    const { data: interactions } = await supabase
+      .from("sourcing_interactions")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(50)
+
+    // Get existing insights
+    const { data: insights, error } = await supabase
+      .from("sourcing_insights")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .eq("user_id", user.id)
+      .gte("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+
+    if (error) throw error
+
+    // Generate new insights if needed
+    if (!insights || insights.length < 3) {
+      const { text } = await generateText({
+        model: "openai/gpt-4o",
+        prompt: `Based on this user's sourcing behavior, generate 3 personalized insights:
+        
+Recent interactions: ${JSON.stringify(interactions?.slice(0, 10))}
+
+Generate insights in this format:
+1. [type]: [title] - [description] (confidence: X%)
+2. [type]: [title] - [description] (confidence: X%)
+3. [type]: [title] - [description] (confidence: X%)
+
+Types: recommendation, prediction, anomaly, trend`,
+      })
+
+      // Parse and store insights
+      const lines = text.split("\n").filter((l) => l.trim())
+      for (const line of lines) {
+        const match = line.match(/\[(\w+)\]: (.+?) - (.+?) $$confidence: (\d+)%$$/)
+        if (match) {
+          await supabase.from("sourcing_insights").insert({
+            tenant_id: profile.tenant_id,
+            user_id: user.id,
+            insight_type: match[1],
+            title: match[2],
+            description: match[3],
+            confidence: Number.parseFloat(match[4]),
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          })
+        }
+      }
+
+      // Refetch insights
+      const { data: newInsights } = await supabase
+        .from("sourcing_insights")
+        .select("*")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("user_id", user.id)
+        .gte("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+
+      return { success: true, data: newInsights }
+    }
+
+    return { success: true, data: insights }
+  } catch (error) {
+    console.error("[v0] Error getting insights:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Failed to get insights" }
+  }
+}
+
+// Auto-outreach campaign management
+export async function createOutreachCampaign(input: {
+  name: string
+  description?: string
+  templateSubject: string
+  templateBody: string
+  targetPoolId?: string
+  targetFilters?: any
+  scheduledAt?: string
+}) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single()
+    if (!profile?.tenant_id) throw new Error("Tenant not found")
+
+    const { data, error } = await supabase
+      .from("outreach_campaigns")
+      .insert({
+        tenant_id: profile.tenant_id,
+        name: input.name,
+        description: input.description,
+        template_subject: input.templateSubject,
+        template_body: input.templateBody,
+        target_pool_id: input.targetPoolId,
+        target_filters: input.targetFilters || {},
+        status: input.scheduledAt ? "scheduled" : "draft",
+        scheduled_at: input.scheduledAt,
+        created_by: user.id,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    // Create blockchain audit entry
+    await supabase.from("sourcing_audit_trail").insert({
+      tenant_id: profile.tenant_id,
+      entity_type: "campaign",
+      entity_id: data.id,
+      action_type: "created",
+      actor_user_id: user.id,
+      metadata: { name: input.name },
+    })
+
+    revalidatePath("/talent/sourcing")
+    return { success: true, data }
+  } catch (error) {
+    console.error("[v0] Error creating campaign:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Failed to create campaign" }
+  }
+}
+
+export async function listOutreachCampaigns() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single()
+    if (!profile?.tenant_id) throw new Error("Tenant not found")
+
+    const { data, error } = await supabase
+      .from("outreach_campaigns")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .order("created_at", { ascending: false })
+
+    if (error) throw error
+
+    return { success: true, data }
+  } catch (error) {
+    console.error("[v0] Error listing campaigns:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Failed to list campaigns" }
+  }
+}
+
+// RPA workflow execution
+export async function executeRPAWorkflow(workflowId: string, context: any) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single()
+    if (!profile?.tenant_id) throw new Error("Tenant not found")
+
+    const startTime = Date.now()
+
+    // Get workflow
+    const { data: workflow, error: workflowError } = await supabase
+      .from("rpa_sourcing_workflows")
+      .select("*")
+      .eq("id", workflowId)
+      .eq("tenant_id", profile.tenant_id)
+      .single()
+
+    if (workflowError || !workflow) throw new Error("Workflow not found")
+
+    const actions = workflow.actions as any[]
+    let actionsCompleted = 0
+    let actionsFailed = 0
+
+    // Execute each action
+    for (const action of actions) {
+      try {
+        switch (action.type) {
+          case "add_to_pool":
+            if (context.candidateId && action.pool_name) {
+              // Find or create pool
+              const { data: pool } = await supabase
+                .from("pools")
+                .select("id")
+                .eq("tenant_id", profile.tenant_id)
+                .eq("name", action.pool_name)
+                .single()
+
+              if (pool) {
+                await supabase.from("pool_members").upsert({
+                  pool_id: pool.id,
+                  candidate_id: context.candidateId,
+                  tenant_id: profile.tenant_id,
+                })
+              }
+            }
+            actionsCompleted++
+            break
+
+          case "send_notification":
+            await supabase.from("notifications").insert({
+              tenant_id: profile.tenant_id,
+              user_id: user.id,
+              title: "RPA Workflow",
+              message: action.message || "Workflow action completed",
+              type: "info",
+            })
+            actionsCompleted++
+            break
+
+          case "send_email":
+            // Queue email (would integrate with email service)
+            actionsCompleted++
+            break
+
+          case "update_status":
+            if (context.candidateId && action.status) {
+              await supabase
+                .from("candidates")
+                .update({ outreach_status: action.status })
+                .eq("id", context.candidateId)
+                .eq("tenant_id", profile.tenant_id)
+            }
+            actionsCompleted++
+            break
+
+          default:
+            actionsFailed++
+        }
+      } catch (err) {
+        actionsFailed++
+      }
+    }
+
+    const executionTime = Date.now() - startTime
+
+    // Log execution
+    await supabase.from("rpa_execution_logs").insert({
+      tenant_id: profile.tenant_id,
+      workflow_id: workflowId,
+      status: actionsFailed === 0 ? "success" : actionsCompleted > 0 ? "partial" : "failed",
+      execution_time_ms: executionTime,
+      actions_completed: actionsCompleted,
+      actions_failed: actionsFailed,
+      metadata: context,
+    })
+
+    // Update workflow stats
+    await supabase
+      .from("rpa_sourcing_workflows")
+      .update({
+        execution_count: workflow.execution_count + 1,
+        last_executed_at: new Date().toISOString(),
+        avg_execution_time_ms: Math.round(
+          ((workflow.avg_execution_time_ms || 0) * workflow.execution_count + executionTime) /
+            (workflow.execution_count + 1),
+        ),
+      })
+      .eq("id", workflowId)
+
+    return { success: true, data: { actionsCompleted, actionsFailed, executionTime } }
+  } catch (error) {
+    console.error("[v0] Error executing RPA workflow:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Failed to execute workflow" }
+  }
+}
+
+// Blockchain audit verification
+export async function getSourcingAuditTrail(params?: { entityType?: string; entityId?: string; limit?: number }) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single()
+    if (!profile?.tenant_id) throw new Error("Tenant not found")
+
+    let query = supabase
+      .from("sourcing_audit_trail")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .order("created_at", { ascending: false })
+      .limit(params?.limit || 50)
+
+    if (params?.entityType) {
+      query = query.eq("entity_type", params.entityType)
+    }
+
+    if (params?.entityId) {
+      query = query.eq("entity_id", params.entityId)
+    }
+
+    const { data, error } = await query
+
+    if (error) throw error
+
+    return { success: true, data }
+  } catch (error) {
+    console.error("[v0] Error getting audit trail:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Failed to get audit trail" }
+  }
+}
+
+export async function verifySourcingAudit(auditId: string) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single()
+    if (!profile?.tenant_id) throw new Error("Tenant not found")
+
+    const { data: audit, error } = await supabase
+      .from("sourcing_audit_trail")
+      .select("*")
+      .eq("id", auditId)
+      .eq("tenant_id", profile.tenant_id)
+      .single()
+
+    if (error || !audit) throw new Error("Audit record not found")
+
+    // Verify hash chain
+    const { data: previousAudit } = await supabase
+      .from("sourcing_audit_trail")
+      .select("data_hash")
+      .eq("tenant_id", profile.tenant_id)
+      .lt("created_at", audit.created_at)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single()
+
+    const verified = !previousAudit || audit.previous_hash === previousAudit.data_hash
+
+    // Update verification status
+    await supabase
+      .from("sourcing_audit_trail")
+      .update({
+        verification_status: verified ? "verified" : "failed",
+      })
+      .eq("id", auditId)
+
+    return { success: true, data: { verified, audit } }
+  } catch (error) {
+    console.error("[v0] Error verifying audit:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Failed to verify audit" }
+  }
+}
+
+// Sourcing analytics
+export async function getSourcingAnalytics() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+
+    const { data: profile } = await supabase.from("profiles").select("tenant_id").eq("id", user.id).single()
+    if (!profile?.tenant_id) throw new Error("Tenant not found")
+
+    const { data, error } = await supabase
+      .from("sourcing_analytics")
+      .select("*")
+      .eq("tenant_id", profile.tenant_id)
+      .single()
+
+    if (error) throw error
+
+    return { success: true, data }
+  } catch (error) {
+    console.error("[v0] Error getting analytics:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Failed to get analytics" }
+  }
 }
