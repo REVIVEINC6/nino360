@@ -24,7 +24,7 @@ export function AnalyticsStats({ opportunities }: AnalyticsStatsProps) {
       value: `${(winRate * 100).toFixed(1)}%`,
       change: "+5.2%",
       trend: "up" as const,
-      icon: TrendingUp,
+      icon: "TrendingUp",
       color: "from-green-500 to-emerald-500",
     },
     {
@@ -32,7 +32,7 @@ export function AnalyticsStats({ opportunities }: AnalyticsStatsProps) {
       value: `$${(avgDealSize / 1000).toFixed(0)}K`,
       change: "+12.3%",
       trend: "up" as const,
-      icon: DollarSign,
+      icon: "DollarSign",
       color: "from-blue-500 to-cyan-500",
     },
     {
@@ -40,7 +40,7 @@ export function AnalyticsStats({ opportunities }: AnalyticsStatsProps) {
       value: `${avgSalesCycle} days`,
       change: "+3 days",
       trend: "down" as const,
-      icon: Clock,
+      icon: "Clock",
       color: "from-orange-500 to-red-500",
     },
     {
@@ -48,7 +48,7 @@ export function AnalyticsStats({ opportunities }: AnalyticsStatsProps) {
       value: `$${(totalPipeline / 1000000).toFixed(2)}M`,
       change: "+18.7%",
       trend: "up" as const,
-      icon: Target,
+      icon: "Target",
       color: "from-purple-500 to-pink-500",
     },
   ]

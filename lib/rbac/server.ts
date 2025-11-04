@@ -1,6 +1,7 @@
 "use server"
 
 import { createServerClient } from "@/lib/supabase/server"
+import { logger } from "@/lib/logger"
 import type { Permission, Role } from "./permissions"
 
 export interface UserPermissions {
@@ -41,17 +42,33 @@ export async function getUserPermissions(): Promise<UserPermissions> {
     return { permissions: [], roles: [] }
   }
 
-  // Get permissions
-  const { data: permissions } = await supabase.rpc("get_user_permissions", {
-    _user_id: user.id,
-    _tenant_id: tenantId,
-  })
+  // Get permissions and roles via safe RPC calls. RPC functions may fail (missing
+  // function, DB error, permission issue) so wrap calls and return conservative
+  // defaults to avoid throwing during simple permission checks.
+  let permissions: any[] | null = null
+  let roles: any[] | null = null
 
-  // Get roles
-  const { data: roles } = await supabase.rpc("get_user_roles", {
-    _user_id: user.id,
-    _tenant_id: tenantId,
-  })
+  try {
+    const resp = await supabase.rpc("get_user_permissions", {
+      _user_id: user.id,
+      _tenant_id: tenantId,
+    })
+    permissions = (resp as any).data ?? null
+  } catch (err: any) {
+    logger.warn("get_user_permissions RPC failed", err)
+    permissions = null
+  }
+
+  try {
+    const resp = await supabase.rpc("get_user_roles", {
+      _user_id: user.id,
+      _tenant_id: tenantId,
+    })
+    roles = (resp as any).data ?? null
+  } catch (err: any) {
+    logger.warn("get_user_roles RPC failed", err)
+    roles = null
+  }
 
   return {
     permissions: permissions?.map((p: any) => p.permission_key) || [],
