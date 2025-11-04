@@ -82,6 +82,43 @@ export default {
 
 import { logger } from "@/lib/logger"
 
+type OpenAIParams = {
+  apiKey: string
+  model: string
+  prompt: string
+  temperature?: number
+  maxTokens?: number
+}
+
+async function callOpenAI(opts: OpenAIParams): Promise<string> {
+  const body = {
+    model: opts.model,
+    prompt: opts.prompt,
+    temperature: opts.temperature ?? 0.7,
+    max_tokens: opts.maxTokens ?? 512,
+  }
+
+  const res = await fetch("https://api.openai.com/v1/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${opts.apiKey}`,
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    logger.error("OpenAI request failed", { status: res.status, body: text })
+    throw new Error("OpenAI request failed")
+  }
+
+  const data = await res.json()
+  // Support both text and choices structures (completions API)
+  const text = data?.choices?.[0]?.text ?? data?.text ?? ""
+  return text.trim()
+}
+
 export interface AIConfig {
   provider: "openai" | "anthropic" | "groq" | "mock"
   apiKey?: string
@@ -151,8 +188,12 @@ class AIClient {
 
   constructor(config?: Partial<AIConfig>) {
     this.config = {
-      provider: (process.env.AI_PROVIDER as AIConfig["provider"]) || "mock",
-      apiKey: process.env.AI_API_KEY,
+      // Prefer a direct provider when OPENAI_API_KEY is set in the environment.
+      provider:
+        (process.env.OPENAI_API_KEY && "openai") ||
+        (process.env.AI_PROVIDER as AIConfig["provider"]) ||
+        "mock",
+      apiKey: process.env.OPENAI_API_KEY || process.env.AI_API_KEY,
       model: process.env.AI_MODEL || "gpt-4",
       temperature: 0.7,
       maxTokens: 2000,
@@ -190,7 +231,34 @@ class AIClient {
       return this.mockGenerateJD(params)
     }
 
-    // TODO: Implement actual AI generation
+    // Example direct OpenAI call (lightweight). If OPENAI_API_KEY is set
+    // this will call the OpenAI completions endpoint. This is intentionally
+    // small and synchronous-friendly; for production prefer a streaming or
+    // SDK-based approach with retries and cost/usage checks.
+    if (this.config.provider === "openai" && this.config.apiKey) {
+      const prompt = `Generate a concise job description for a ${params.title} at ${params.company}. Requirements: ${(
+        params.requirements || []
+      ).join(', ')}`
+
+      const completion = await callOpenAI({
+        apiKey: this.config.apiKey,
+        model: this.config.model!,
+        prompt,
+        temperature: this.config.temperature,
+        maxTokens: this.config.maxTokens,
+      })
+
+      return {
+        title: params.title,
+        description: completion,
+        responsibilities: ["See description"],
+        requirements: params.requirements || [],
+        skills: [],
+        salary_range: undefined,
+      }
+    }
+
+    // Fallback to mock behavior for other providers until implemented.
     return this.mockGenerateJD(params)
   }
 
