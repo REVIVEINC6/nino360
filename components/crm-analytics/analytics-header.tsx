@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Download, RefreshCw, Calendar } from "lucide-react"
 import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 async function fetchJson(url: string, opts?: RequestInit) {
   const res = await fetch(url, opts)
@@ -16,13 +17,47 @@ export function AnalyticsHeader() {
   const [refreshing, setRefreshing] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [aiRunning, setAiRunning] = useState(false)
+  const [canRead, setCanRead] = useState(false)
+  const [canAi, setCanAi] = useState(false)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    let mounted = true
+    async function loadPermissions() {
+      try {
+        const res = await fetch('/api/auth/post-login')
+        if (!res.ok) throw new Error(`Auth fetch failed: ${res.status}`)
+        const json = await res.json()
+        // Expecting { role: string, permissions?: string[] }
+        const perms: string[] = json.permissions || []
+        if (!mounted) return
+        setCanRead(perms.includes('crm:analytics:read'))
+        setCanAi(perms.includes('crm:analytics:ai'))
+      } catch (e) {
+        console.error('Failed to load permissions', e)
+        // Keep conservative defaults (buttons disabled)
+        if (mounted) {
+          setCanRead(false)
+          setCanAi(false)
+        }
+      }
+    }
+
+    loadPermissions()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   async function onRefresh() {
     try {
       setRefreshing(true)
-      await fetchJson("/api/crm/analytics/refresh")
+      const body = await fetchJson('/api/crm/analytics/refresh')
+      toast({ title: 'Refresh started', description: 'Analytics refresh queued' })
+      return body
     } catch (e) {
       console.error("Refresh failed:", e)
+      toast({ title: 'Refresh failed', description: String(e) })
     } finally {
       setRefreshing(false)
     }
@@ -31,7 +66,7 @@ export function AnalyticsHeader() {
   async function onExport() {
     try {
       setExporting(true)
-      const res = await fetch("/api/crm/analytics/export")
+      const res = await fetch('/api/crm/analytics/export')
       if (!res.ok) throw new Error("Export failed")
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
@@ -44,6 +79,7 @@ export function AnalyticsHeader() {
       URL.revokeObjectURL(url)
     } catch (e) {
       console.error("Export failed:", e)
+      toast({ title: 'Export failed', description: String(e) })
     } finally {
       setExporting(false)
     }
@@ -61,10 +97,10 @@ export function AnalyticsHeader() {
         body: JSON.stringify({ from, to }),
       })
       console.log("AI Digest result:", body)
-      // In a real app we'd surface the text in a drawer/modal. For now, log it and
-      // optionally display a notification in the UI.
+      toast({ title: 'AI Digest ready', description: 'Check the activity log or AI panel for results' })
     } catch (e) {
       console.error("AI Digest failed:", e)
+      toast({ title: 'AI Digest failed', description: String(e) })
     } finally {
       setAiRunning(false)
     }
@@ -86,15 +122,36 @@ export function AnalyticsHeader() {
 
       <div className="flex items-center gap-3">
         <Badge className="ai-glow">ML-Powered</Badge>
-        <Button variant="outline" size="sm" className="glass-card bg-transparent" onClick={onAiDigest} disabled={aiRunning}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="glass-card bg-transparent"
+          onClick={onAiDigest}
+          disabled={aiRunning || !canAi}
+          title={!canAi ? 'You do not have permission to run AI digests' : undefined}
+        >
           <Calendar className="mr-2 h-4 w-4" />
           {aiRunning ? "Analyzing…" : "AI Digest"}
         </Button>
-        <Button variant="outline" size="sm" className="glass-card bg-transparent" onClick={onRefresh} disabled={refreshing}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="glass-card bg-transparent"
+          onClick={onRefresh}
+          disabled={refreshing || !canRead}
+          title={!canRead ? 'You do not have permission to refresh analytics' : undefined}
+        >
           <RefreshCw className="mr-2 h-4 w-4" />
           {refreshing ? "Refreshing…" : "Refresh"}
         </Button>
-        <Button variant="outline" size="sm" className="glass-card bg-transparent" onClick={onExport} disabled={exporting}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="glass-card bg-transparent"
+          onClick={onExport}
+          disabled={exporting || !canRead}
+          title={!canRead ? 'You do not have permission to export analytics' : undefined}
+        >
           <Download className="mr-2 h-4 w-4" />
           {exporting ? "Exporting…" : "Export"}
         </Button>
