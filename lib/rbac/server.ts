@@ -9,6 +9,14 @@ export interface UserPermissions {
   roles: Array<{ key: string; label: string }>
 }
 
+export interface FieldLevelAccess {
+  contacts?: { read?: string[]; write?: string[] }
+}
+
+export interface UserPermissionsWithFlac extends UserPermissions {
+  flac?: FieldLevelAccess
+}
+
 /**
  * Development-only RBAC bypass
  * Enable by setting RBAC_BYPASS=1 (ignored in production)
@@ -90,6 +98,27 @@ export async function getUserPermissions(): Promise<UserPermissions> {
     permissions: permissions?.map((p: any) => p.permission_key) || [],
     roles: roles || [],
   }
+}
+
+/**
+ * Return permissions along with a lightweight FLAC (field-level access control)
+ * derived from permission flags. This is intentionally simple: production systems
+ * may need a richer FLAC model stored in the DB.
+ */
+export async function getUserPermissionsWithFlac(): Promise<UserPermissionsWithFlac> {
+  const perms = await getUserPermissions()
+  const p = perms.permissions
+
+  const flac: FieldLevelAccess = {}
+
+  // If the user can update contacts, allow writing common fields
+  if (p.includes("crm.contacts.update") || p.includes("crm.contacts.create")) {
+    flac.contacts = { write: ["first_name", "last_name", "email", "phone", "company", "title", "tags", "notes"], read: ["*"] }
+  } else if (p.includes("crm.contacts.read")) {
+    flac.contacts = { read: ["first_name", "last_name", "email", "phone", "company", "title"] }
+  }
+
+  return { ...perms, flac }
 }
 
 /**

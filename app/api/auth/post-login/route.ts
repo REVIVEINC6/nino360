@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { getUserPermissions } from '@/lib/rbac/server'
+import { getUserPermissionsWithFlac } from '@/lib/rbac/server'
 
 export async function GET() {
   try {
@@ -9,11 +9,12 @@ export async function GET() {
 
     if (!data?.user) return NextResponse.json({ roles: [] })
 
-    const perms = await getUserPermissions()
+    const perms = await getUserPermissionsWithFlac()
     // Ensure a consistent shape
     const out = {
       permissions: Array.isArray(perms.permissions) ? perms.permissions : [],
       roles: Array.isArray(perms.roles) ? perms.roles : [],
+      flac: perms.flac || {},
     }
     return NextResponse.json(out)
   } catch (err: any) {

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { isSupabaseBrowserConfigured } from "@/lib/supabase-browser"
 import { logAuthAttempt, loginWithPassword } from "./actions"
 
 export default function LoginPage() {
@@ -130,6 +131,15 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
+      {!isSupabaseBrowserConfigured() && (
+        <div className="fixed right-6 bottom-6 z-50 max-w-md">
+          <div className="rounded-md bg-red-600 text-white p-4 shadow-lg">
+            <div className="font-bold">Error</div>
+            <div className="text-sm mt-1">NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required for the browser client</div>
+            <div className="mt-2 text-xs opacity-90">Set these env vars in your hosting provider and redeploy.</div>
+          </div>
+        </div>
+      )}
       <Card className="w-full max-w-md bg-white shadow-2xl border-0 p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
