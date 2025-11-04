@@ -1,0 +1,32 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build:prod",
+			"type": "shell",
+			"command": "pnpm run build",
+			"args": [],
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build:prod",
+			"type": "shell",
+			"command": "pnpm run build",
+			"args": [],
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "build:prod",
+			"type": "shell",
+			"command": "pnpm run build",
+			"args": [],
+			"group": "build"
+		}
+	]
+}

@@ -1,0 +1,25 @@
+nino360:
+  target: bigquery
+  outputs:
+    bigquery:
+      type: bigquery
+      method: service-account
+      project: nino360-analytics
+      dataset: analytics
+      threads: 4
+      timeout_seconds: 300
+      location: US
+      priority: interactive
+      keyfile: "{{ env_var('BIGQUERY_KEYFILE_PATH') }}"
+      
+    snowflake:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: TRANSFORMER
+      database: NINO360
+      warehouse: ANALYTICS_WH
+      schema: ANALYTICS
+      threads: 4
+      client_session_keep_alive: False
