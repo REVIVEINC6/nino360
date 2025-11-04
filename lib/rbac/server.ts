@@ -25,6 +25,22 @@ async function rbacBypassEnabled(): Promise<boolean> {
  * Get current user's permissions for the current tenant
  */
 export async function getUserPermissions(): Promise<UserPermissions> {
+  // Development shortcut: when DEV_FAKE_USER_ID is set we return a safe
+  // default permission set to make local development easier without a
+  // full authenticated Supabase session. This avoids frequent JWT expired
+  // and RPC errors during development.
+  if (process.env.NODE_ENV !== "production" && process.env.DEV_FAKE_USER_ID) {
+    return {
+      permissions: [
+        // common development permissions used by the analytics UI
+        "crm:analytics:read",
+        "crm:analytics:ai",
+        "crm:contacts:read",
+      ],
+      roles: [{ key: "dev", label: "Developer (dev-fake)" }],
+    }
+  }
+
   const supabase = await createServerClient()
 
   const {
