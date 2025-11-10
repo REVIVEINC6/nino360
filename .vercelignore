@@ -1,0 +1,22 @@
+# Ignore mobile directory for web deployment
+mobile/
+
+# Ignore test files
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Ignore documentation
+docs/
+*.md
+!README.md
+
+# Ignore most scripts but include postbuild helpers needed at deploy
+# Ignore all scripts by default but whitelist the postbuild helpers we need
+scripts/*
+!scripts/postbuild-wrapper.js
+!scripts/postbuild.js
+!scripts/fix-client-manifests.mjs
+!scripts/*.mjs
