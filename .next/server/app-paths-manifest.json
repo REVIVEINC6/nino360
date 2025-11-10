@@ -1,0 +1,7 @@
+{
+  "/(dashboard)/crm/analytics/page": "app/(dashboard)/crm/analytics/page.js",
+  "/(dashboard)/crm/engagement/page": "app/(dashboard)/crm/engagement/page.js",
+  "/(dashboard)/crm/contacts/page": "app/(dashboard)/crm/contacts/page.js",
+  "/(dashboard)/crm/[id]/page": "app/(dashboard)/crm/[id]/page.js",
+  "/(dashboard)/crm/calendar/page": "app/(dashboard)/crm/calendar/page.js"
+}
