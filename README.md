@@ -1,5 +1,4 @@
-# nino360-contacts-v0
-
+# nino360-contacts
 Bootstrap of the CRM Contacts service for Nino360. This scaffolding includes DB migrations, Next.js app skeleton, worker scaffolding, and utilities for Field-Level Access Control (FLAC).
 
 See `db/migrations/0001_initial.sql` for the initial schema and RLS examples.
@@ -12,10 +11,6 @@ Local dev quick start (requires Docker Postgres or local Postgres):
 4. Start worker: npm run worker
 # Nino360 HRMS - Enterprise HR Management System
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
-
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/pratap-reddys-projects/v0-nino360-hrms-blueprint)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/H65tqDuVJgx)
 
 ## Overview
 
@@ -218,9 +213,7 @@ See [Deployment Guide](docs/DEPLOYMENT.md) for detailed instructions.
 
 ## Contributing
 
-This project is built and maintained using [v0.app](https://v0.app). To contribute:
 
-1. Continue building on [v0.app](https://v0.app/chat/projects/H65tqDuVJgx)
 2. Changes are automatically synced to this repository
 3. Vercel deploys the latest version automatically
 
@@ -238,12 +231,3 @@ For issues or questions:
 
 ## Deployment
 
-Your project is live at:
-
-**[https://vercel.com/pratap-reddys-projects/v0-nino360-hrms-blueprint](https://vercel.com/pratap-reddys-projects/v0-nino360-hrms-blueprint)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/projects/H65tqDuVJgx](https://v0.app/chat/projects/H65tqDuVJgx)**
